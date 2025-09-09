@@ -2450,47 +2450,55 @@
             themeIconDark.classList.toggle('hidden');
         });
 
-
         (function () {
-  if (window._casesPager) { window._casesPager.refresh(); return; }
+  if (window._casesPager2) { window._casesPager2.refresh(); return; }
 
   const table = document.querySelector('table.min-w-full');
   const tbody = document.getElementById('cases-table-body');
   if (!table || !tbody) { console.warn('Table or tbody (cases-table-body) not found'); return; }
 
-  // --- Config ---
-  let perPage = 50;                // default rows per page
-  let siMode = 'global';           // 'global' => 1..N across all rows, 'page' => 1..50 per page
+  // ---------- Config ----------
+  let perPage = 50;          // default
+  let siMode = 'global';     // 'global' (1..N) or 'page' (1..perPage)
+  const maxPageButtons = 7;  // max numbered buttons visible (with ellipses)
 
-  // --- State ---
+  // ---------- State ----------
   let rows = [];
   let page = 1;
   let totalPages = 1;
 
-  // --- Pager UI container (inserted after the table) ---
-  const pagerEl = document.createElement('div');
-  pagerEl.id = 'cases-pager';
-  pagerEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding:8px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;';
-  table.insertAdjacentElement('afterend', pagerEl);
+  // ---------- Helpers ----------
+  const clamp = (n, lo, hi) => Math.min(Math.max(n, lo), hi);
+  const pageList = (current, total, maxBtns = 7) => {
+    // Build array like: [1, '…', 4, 5, 6, '…', 20]
+    if (total <= maxBtns) return Array.from({length: total}, (_,i)=>i+1);
+    const side = Math.max(1, Math.floor((maxBtns - 3) / 2));
+    const left = Math.max(2, current - side);
+    const right = Math.min(total - 1, current + side);
+    const list = [1];
+    if (left > 2) list.push('…');
+    for (let i = left; i <= right; i++) list.push(i);
+    if (right < total - 1) list.push('…');
+    list.push(total);
+    return list;
+  };
 
-  // Collect rows and compute pages
   function collectRows() {
     rows = Array.from(tbody.querySelectorAll('tr'));
     totalPages = Math.max(1, Math.ceil(rows.length / perPage));
   }
 
-  // Update SI cell for a visible row
   function setSI(rowIndex, visibleIndexOnPage) {
     const row = rows[rowIndex];
-    const firstCell = row && row.firstElementChild; // SI cell
+    if (!row) return;
+    const firstCell = row.firstElementChild;
     if (!firstCell) return;
-    const val = (siMode === 'global') ? (rowIndex + 1) : (visibleIndexOnPage + 1);
+    const val = siMode === 'global' ? (rowIndex + 1) : (visibleIndexOnPage + 1);
     firstCell.textContent = String(val);
   }
 
-  // Render a page
   function renderPage(n) {
-    page = Math.min(Math.max(1, n), totalPages);
+    page = clamp(n, 1, totalPages);
     const start = (page - 1) * perPage;
     const end = start + perPage;
 
@@ -2500,80 +2508,250 @@
       rows[i].style.display = show ? '' : 'none';
       if (show) setSI(i, visIdx++);
     }
-    renderPager();
+    updateBar();
   }
 
-  // Build the pager buttons / info
-  function renderPager() {
-    pagerEl.innerHTML = '';
+  // ---------- UI (Tailwind + fallback) ----------
+  const nav = document.createElement('nav');
+  nav.setAttribute('aria-label', 'Cases pagination');
+  nav.id = 'cases-pager';
+  nav.className = [
+    // position
+    'fixed','bottom-4','left-1/2','-translate-x-1/2','z-[9999]',
+    'max-w-[95vw]',
+  ].join(' ');
 
-    const info = document.createElement('span');
-    info.textContent = `${rows.length} cases — Page ${page}/${totalPages}`;
-    info.style.marginRight = '8px';
-    pagerEl.appendChild(info);
+  // container
+  const wrap = document.createElement('div');
+  wrap.className = [
+    'flex','items-center','gap-2','px-3','py-2','rounded-2xl',
+    'backdrop-blur','shadow-xl','ring-1','ring-black/5',
+    'bg-white/80','text-gray-900',
+    'dark:bg-gray-900/80','dark:text-gray-100'
+  ].join(' ');
+  nav.appendChild(wrap);
 
-    pagerEl.appendChild(makeBtn('Prev', () => renderPage(page - 1), page <= 1));
+  // prev
+  const btnPrev = buttonIcon('Prev', chevronLeft());
+  // pages container
+  const pagesBox = document.createElement('div');
+  pagesBox.className = 'flex items-center gap-1';
+  // next
+  const btnNext = buttonIcon('Next', chevronRight());
 
-    // Numeric page buttons: 1, 2, 3, 4, ...
-    for (let p = 1; p <= totalPages; p++) {
-      pagerEl.appendChild(makeBtn(String(p), () => renderPage(p), p === page, p === page));
-    }
+  // range label
+  const range = document.createElement('div');
+  range.className = 'hidden md:block text-sm text-gray-600 dark:text-gray-300 ml-2';
 
-    pagerEl.appendChild(makeBtn('Next', () => renderPage(page + 1), page >= totalPages));
+  // per page
+  const perWrap = document.createElement('label');
+  perWrap.className = 'flex items-center gap-1 ml-2 text-sm';
+  perWrap.innerHTML = '<span class="text-gray-600 dark:text-gray-300">Rows</span>';
+  const perSel = document.createElement('select');
+  perSel.className = 'h-8 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 px-2';
+  [25,50,100,200].forEach(n=>{
+    const o=document.createElement('option'); o.value=n; o.textContent=n; if(n===perPage)o.selected=true;
+    perSel.appendChild(o);
+  });
+  perWrap.appendChild(perSel);
 
-    // Per-page input (optional)
-    const perWrap = document.createElement('label');
-    perWrap.style.marginLeft = '10px';
-    perWrap.textContent = 'Per page: ';
-    const perInput = document.createElement('input');
-    perInput.type = 'number';
-    perInput.min = '1';
-    perInput.value = perPage;
-    perInput.style.width = '70px';
-    perInput.onchange = () => {
-      perPage = Math.max(1, parseInt(perInput.value || '50', 10));
-      collectRows();
-      renderPage(1);
-    };
-    perWrap.appendChild(perInput);
-    pagerEl.appendChild(perWrap);
+  // SI mode toggle
+  const siBtn = document.createElement('button');
+  siBtn.type = 'button';
+  siBtn.className = 'h-8 px-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 text-sm';
+  siBtn.title = 'Toggle SI numbering mode';
+  setSIModeLabel();
+
+  // jump to page
+  const jumpWrap = document.createElement('div');
+  jumpWrap.className = 'flex items-center gap-1 ml-2 text-sm';
+  const jumpIn = document.createElement('input');
+  jumpIn.type = 'number';
+  jumpIn.min = '1';
+  jumpIn.className = 'h-8 w-20 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 px-2';
+  jumpIn.placeholder = 'Go…';
+  const jumpBtn = pillButton('Go');
+
+  // close
+  const closeBtn = pillButton('✕');
+  closeBtn.title = 'Hide paginator';
+
+  // Assemble
+  wrap.appendChild(btnPrev);
+  wrap.appendChild(pagesBox);
+  wrap.appendChild(btnNext);
+  wrap.appendChild(range);
+  wrap.appendChild(perWrap);
+  wrap.appendChild(siBtn);
+  jumpWrap.appendChild(jumpIn);
+  jumpWrap.appendChild(jumpBtn);
+  wrap.appendChild(jumpWrap);
+  wrap.appendChild(closeBtn);
+
+  // Add to DOM
+  table.insertAdjacentElement('afterend', nav);
+
+  // Tiny fallback styles if Tailwind is not present
+  if (!document.documentElement.classList.contains('dark') && !hasTailwind()) {
+    nav.style.position = 'fixed';
+    nav.style.bottom = '16px';
+    nav.style.left = '50%';
+    nav.style.transform = 'translateX(-50%)';
+    nav.style.zIndex = 9999;
+    wrap.style.background = 'rgba(255,255,255,.9)';
+    wrap.style.border = '1px solid #e5e7eb';
+    wrap.style.borderRadius = '16px';
+    wrap.style.padding = '8px 12px';
+    wrap.style.boxShadow = '0 10px 30px rgba(0,0,0,.15)';
+    wrap.style.color = '#111';
   }
 
-  function makeBtn(label, onClick, disabled = false, active = false) {
-    const b = document.createElement('button');
-    b.textContent = label;
-    b.disabled = !!disabled;
-    b.style.cssText =
-      'padding:4px 8px;border:1px solid #d1d5db;border-radius:6px;background:#ffffff;cursor:pointer;line-height:1.2;';
-    if (disabled) b.style.opacity = '0.5';
-    if (active) b.style.background = '#f3f4f6';
-    b.addEventListener('click', onClick);
-    return b;
-  }
-
-  // Public API (optional)
-  function refresh() {
+  // ---------- Events ----------
+  btnPrev.addEventListener('click', () => renderPage(page - 1));
+  btnNext.addEventListener('click', () => renderPage(page + 1));
+  perSel.addEventListener('change', () => {
+    perPage = Math.max(1, parseInt(perSel.value, 10) || 50);
     collectRows();
-    if (page > totalPages) page = totalPages;
+    renderPage(1);
+  });
+  siBtn.addEventListener('click', () => {
+    siMode = siMode === 'global' ? 'page' : 'global';
+    setSIModeLabel();
     renderPage(page);
-  }
+  });
+  jumpBtn.addEventListener('click', () => {
+    const p = parseInt(jumpIn.value, 10);
+    if (!isNaN(p)) renderPage(p);
+  });
+  jumpIn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const p = parseInt(jumpIn.value, 10);
+      if (!isNaN(p)) renderPage(p);
+    }
+  });
+  closeBtn.addEventListener('click', () => {
+    nav.style.display = 'none';
+  });
 
-  // Watch for dynamic row insertions
+  // Keyboard: ← → to navigate
+  window.addEventListener('keydown', (e) => {
+    if (['INPUT','TEXTAREA','SELECT'].includes((e.target.tagName||'').toUpperCase())) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); renderPage(page-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); renderPage(page+1); }
+  }, true);
+
+  // Watch dynamic changes
   const mo = new MutationObserver(() => refresh());
   mo.observe(tbody, { childList: true });
 
-  // Init
+  // ---------- Render ----------
+  function updateBar() {
+    // Prev/Next state
+    setDisabled(btnPrev, page <= 1);
+    setDisabled(btnNext, page >= totalPages);
+
+    // Range text
+    const start = rows.length ? (page - 1) * perPage + 1 : 0;
+    const end = Math.min(rows.length, page * perPage);
+    range.textContent = `Showing ${start}–${end} of ${rows.length}`;
+
+    // Page buttons
+    pagesBox.innerHTML = '';
+    for (const item of pageList(page, totalPages, maxPageButtons)) {
+      if (item === '…') {
+        const ell = document.createElement('span');
+        ell.textContent = '…';
+        ell.className = 'px-2 text-gray-500';
+        pagesBox.appendChild(ell);
+      } else {
+        const b = pillButton(String(item));
+        if (item === page) {
+          b.classList.add('bg-gray-900','text-white','dark:bg-gray-100','dark:text-gray-900');
+        }
+        b.addEventListener('click', () => renderPage(item));
+        pagesBox.appendChild(b);
+      }
+    }
+
+    // Jump input bounds
+    jumpIn.max = String(totalPages);
+  }
+
+  function refresh() {
+    const prevTotal = rows.length;
+    collectRows();
+    if (prevTotal !== rows.length) page = clamp(page, 1, totalPages);
+    renderPage(page);
+  }
+
+  function setSIModeLabel() {
+    siBtn.textContent = `SI: ${siMode === 'global' ? 'Global' : 'Page'}`;
+  }
+
+  // ---------- Init ----------
   collectRows();
   renderPage(1);
 
-  // Expose small API for console tweaks if you want
-  window._casesPager = {
+  // Expose API
+  window._casesPager2 = {
     refresh,
     goto: (p) => renderPage(p),
     setPerPage: (n) => { perPage = Math.max(1, +n || 50); refresh(); },
-    setSIMode: (mode) => { if (mode === 'global' || mode === 'page') { siMode = mode; refresh(); } }
+    setSIMode: (mode) => { if (mode==='global'||mode==='page'){ siMode=mode; setSIModeLabel(); refresh(); } },
   };
+
+  // ---------- UI builders ----------
+  function pillButton(text) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = text;
+    b.className = [
+      'h-8','px-3','rounded-xl','border','text-sm',
+      'border-gray-300','dark:border-gray-700',
+      'bg-white/70','dark:bg-gray-800/70',
+      'hover:bg-gray-100','dark:hover:bg-gray-800',
+      'transition','disabled:opacity-50'
+    ].join(' ');
+    return b;
+  }
+
+  function buttonIcon(aria, svg) {
+    const b = pillButton('');
+    b.setAttribute('aria-label', aria);
+    b.innerHTML = svg;
+    b.style.display = 'inline-flex';
+    b.style.alignItems = 'center';
+    b.style.justifyContent = 'center';
+    b.style.gap = '6px';
+    return b;
+  }
+
+  function setDisabled(btn, disabled) {
+    btn.disabled = !!disabled;
+  }
+
+  function chevronLeft() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+      viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd"
+      d="M10.354 1.646a.5.5 0 0 1 0 .708L5.707 7l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0"/></svg>`;
+  }
+  function chevronRight() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+      viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd"
+      d="M5.646 1.646a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L10.293 7 5.646 2.354a.5.5 0 0 1 0-.708"/></svg>`;
+  }
+
+  function hasTailwind() {
+    // very lightweight heuristic: check a class applied with Tailwind utilities
+    const probe = document.createElement('div');
+    probe.className = 'hidden';
+    document.body.appendChild(probe);
+    const isHidden = window.getComputedStyle(probe).display === 'none';
+    probe.remove();
+    return isHidden;
+  }
 })();
+
 
         
     </script>
