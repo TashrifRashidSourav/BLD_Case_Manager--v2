@@ -1,0 +1,2581 @@
+<!DOCTYPE html>
+<html lang="en" class=""> <!-- Class for theme toggle -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Set Tailwind dark mode based on the class on the <html> tag
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <style>
+        /* Custom font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style for the modal backdrop */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4a5568;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Removing default border from table cells for a cleaner look */
+        #cases-table-body td {
+            border-top: none;
+        }
+        /* Adding a border to the row itself to create the card effect */
+        #cases-table-body tr.case-row {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .dark #cases-table-body tr.case-row {
+             border-bottom: 1px solid #374151;
+        }
+        #cases-table-body tr.date-header-row td {
+            border-bottom: 2px solid #d1d5db;
+        }
+        .dark #cases-table-body tr.date-header-row td {
+             border-bottom: 2px solid #4b5563;
+        }
+        /* Notification Badge */
+        .notification-badge {
+            top: -5px;
+            right: -10px;
+        }
+        /* Active filter button style */
+        .filter-btn.active, .admin-nav-btn.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        /* Login page background texture */
+        .login-bg {
+            background-color: #111827;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        /* Simple progress bar styling */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .dark .progress-bar-container {
+             background-color: #374151;
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #4f46e5;
+            border-radius: 9999px;
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+
+    <!-- Login Page -->
+    <div id="login-page" class="flex items-center justify-center min-h-screen login-bg">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20">
+            <div class="flex flex-col items-center">
+                <h2 class="text-3xl font-extrabold text-center text-white">
+                    Welcome to BLD Case Management System
+                </h2>
+            </div>
+            <form id="login-form" class="space-y-6">
+                 <div>
+                    <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
+                    <div class="mt-1">
+                        <select id="username" name="username" required
+                            class="block w-full px-3 py-2 bg-gray-700/50 border border-gray-500 text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="" disabled selected>Select your name</option>
+                            <!-- User options will be dynamically populated here -->
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+                    <div class="mt-1">
+                        <input id="password" name="password" type="password" required
+                            class="block w-full px-3 py-2 placeholder-gray-400 bg-gray-700/50 border border-gray-500 text-white rounded-md shadow-sm appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                
+                <p id="login-error" class="text-sm text-red-400 hidden">Invalid username or password.</p>
+
+                <div>
+                    <button type="submit"
+                        class="flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Sign in
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application Page (Initially Hidden) -->
+    <div id="app-page" class="hidden">
+        <div class="px-4 sm:px-6 lg:px-8">
+            <header class="mb-8 flex justify-between items-center pt-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Case Management</h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-1">Add, view, and manage your case records.</p>
+                </div>
+                <div class="text-right flex items-center space-x-4">
+                    <div class="relative">
+                        <button id="notification-bell" class="relative text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white focus:outline-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            <span id="notification-badge" class="notification-badge absolute inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full hidden">0</span>
+                        </button>
+                        <div id="notification-panel" class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden z-20 hidden">
+                            <div class="py-2 px-4 flex justify-between items-center text-sm font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700">
+                                <span>Notifications</span>
+                                <button id="clear-notifications-btn" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Clear All</button>
+                            </div>
+                            <div id="notification-list" class="max-h-96 overflow-y-auto">
+                                <!-- Notifications will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="p-2 rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 focus:outline-none">
+                        <svg id="theme-icon-light" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg id="theme-icon-dark" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </button>
+                    <div>
+                        <p class="text-sm text-gray-700 dark:text-gray-300">Welcome, <span id="loggedInUser" class="font-semibold"></span>!</p>
+                        <button id="logout-btn" class="mt-2 text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none">Logout</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Admin Navigation Bar -->
+            <div id="admin-nav" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-8 p-3 border dark:border-gray-700 flex-wrap space-x-2">
+                 <button id="show-dashboard-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700 active">Dashboard</button>
+                 <button id="toggle-user-management-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Manage Users</button>
+                 <button id="toggle-task-management-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Task Management</button>
+                 <button id="send-notification-btn" class="font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Send Notification</button>
+            </div>
+             <!-- User Action Bar -->
+            <div id="user-nav" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-8 p-3 border dark:border-gray-700">
+                 <button id="notify-admin-btn" class="font-semibold text-indigo-700 hover:text-indigo-900 px-4 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Notify Admin</button>
+            </div>
+            
+            <!-- User Dashboard Panel -->
+            <div id="user-dashboard" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
+                <!-- User Tasks Panel -->
+                <div id="user-tasks-panel" class="mb-8 border-b dark:border-gray-700 pb-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">My Assigned Tasks</h2>
+                    <div id="my-tasks-container" class="space-y-4">
+                        <!-- User's assigned tasks will be rendered here -->
+                        <p class="text-center text-gray-500 dark:text-gray-400">You have no assigned tasks.</p>
+                    </div>
+                </div>
+
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200"><span id="dashboard-title-user-name">My</span> Dashboard & Filters</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div>
+                        <label for="date-from" class="block text-sm font-medium text-gray-700 dark:text-gray-300">From</label>
+                        <input type="date" id="date-from" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="date-to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To</label>
+                        <input type="date" id="date-to" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                    <div class="flex items-end space-x-2 md:col-span-2">
+                        <button id="filter-report-btn" class="w-full py-2 px-4 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Filter</button>
+                        <button id="clear-report-filter-btn" class="w-full py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">Clear</button>
+                        <button id="download-csv-btn" class="w-full py-2 px-4 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">Download CSV</button>
+                    </div>
+                </div>
+                 <!-- Section for case list filters -->
+                <div class="border-t dark:border-gray-700 mt-6 pt-4">
+                    <div class="flex items-center space-x-2 flex-wrap">
+                        <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mr-2 mb-2">Show cases:</h3>
+                        <button id="filter-added-by-me" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Add By Me</button>
+                        <button id="filter-checked-by-me" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Check By Me</button>
+                        <button id="filter-confirmed-by-me" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Confirm By Me</button>
+                        <button id="filter-checked-by-others" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Checked</button>
+                        <button id="filter-confirmed-by-others" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Confirmed</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-lg mt-4">
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Add By Me</h4>
+                        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400" id="user-added-count">0</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Check By Me</h4>
+                        <p class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="user-checked-count">0</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Confirm By Me</h4>
+                        <p class="text-3xl font-bold text-green-600 dark:text-green-400" id="user-confirmed-count">0</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Checked</h4>
+                        <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400" id="user-checked-by-others-count">0</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Confirmed</h4>
+                        <p class="text-3xl font-bold text-purple-600 dark:text-purple-400" id="user-confirmed-by-others-count">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Statistics Panel -->
+            <div id="admin-stats-panel" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Statistics (Based on Filters)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-center">
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Cases Added</h4>
+                        <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400" id="admin-stat-added">0</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Cases Checked</h4>
+                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="admin-stat-checked">0</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Cases Confirmed</h4>
+                        <p class="text-2xl font-bold text-green-600 dark:text-green-400" id="admin-stat-confirmed">0</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Pending Check</h4>
+                        <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400" id="admin-stat-pending-check">0</p>
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-500 dark:text-gray-400">Pending Confirm</h4>
+                        <p class="text-2xl font-bold text-purple-600 dark:text-purple-400" id="admin-stat-pending-confirm">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Management Panel (Initially Hidden) -->
+            <div id="user-management-section" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">User Management</h2>
+                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 mb-6">
+                    <h3 class="font-semibold mb-2">Admin Account</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
+                        <input type="password" id="admin-new-password" placeholder="New Password" class="col-span-2 block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <button id="admin-change-pass-btn" class="col-span-1 py-1 px-3 text-sm font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600">Change My Password</button>
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 mb-6">
+                    <h3 class="font-semibold mb-2">Existing Users</h3>
+                    <div id="user-list-container" class="space-y-3">
+                        <!-- User list will be rendered here -->
+                    </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700">
+                    <h3 class="font-semibold mb-2">Add New User</h3>
+                    <form id="add-user-form" class="space-y-3">
+                        <input type="text" id="new-username" placeholder="Username" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <input type="password" id="new-password" placeholder="Password" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <button type="submit" class="w-full py-2 px-4 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">Add User</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Task Management Panel (Initially Hidden) -->
+            <div id="task-management-section" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Task Management</h2>
+                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 mb-6">
+                    <h3 class="font-semibold mb-2">Assign New Task</h3>
+                    <form id="assign-task-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                        <div class="md:col-span-1">
+                            <label for="assign-task-user" class="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
+                            <select id="assign-task-user" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></select>
+                        </div>
+                         <div class="md:col-span-1">
+                            <label for="assign-task-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Task Type</label>
+                            <select id="assign-task-type" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="upload">Upload Cases</option>
+                                <option value="check">Check Cases</option>
+                                <option value="confirm">Confirm Cases</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label for="assign-task-target" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Target</label>
+                            <input type="number" id="assign-task-target" min="1" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="md:col-span-1 grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="assign-task-start-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+                                <input type="date" id="assign-task-start-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label for="assign-task-end-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
+                                <input type="date" id="assign-task-end-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="assign-task-note" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Initial Note (Optional)</label>
+                            <textarea id="assign-task-note" rows="2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" class="w-full py-2 px-4 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Assign Task</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700">
+                    <h3 class="font-semibold mb-2">Current Tasks</h3>
+                    <div id="assigned-tasks-container" class="space-y-3">
+                        <!-- All assigned tasks will be rendered here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Filter Panel (Initially Hidden) -->
+            <div id="admin-panel" class="hidden bg-indigo-50 dark:bg-gray-800/50 p-6 rounded-lg shadow-md mb-8 border border-indigo-200 dark:border-gray-700">
+                <h2 class="text-xl font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Admin Panel: Filters</h2>
+                <div id="filter-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                    <div>
+                        <label for="filter-case-no" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Case Number</label>
+                        <input type="text" id="filter-case-no" placeholder="Search by case number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                     <div>
+                        <label for="filter-party-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Party Name</label>
+                        <input type="text" id="filter-party-name" placeholder="Search by party name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="filter-volume" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Volume</label>
+                        <input type="text" id="filter-volume" placeholder="Search by volume" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="filter-user-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Added by User</label>
+                        <select id="filter-user-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="">All Users</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filter-checked-by" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Checked by User</label>
+                        <select id="filter-checked-by" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="">All Users</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filter-confirmed-by" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirmed by User</label>
+                        <select id="filter-confirmed-by" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="">All Users</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filter-date-from" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date Added From</label>
+                        <input type="date" id="filter-date-from" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="filter-date-to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date Added To</label>
+                        <input type="date" id="filter-date-to" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-3">
+                    <button id="search-btn" class="py-2 px-4 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Search</button>
+                    <button id="clear-filter-btn" class="py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">Clear All Filters</button>
+                    <button id="download-admin-csv-btn" class="py-2 px-4 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">Download CSV</button>
+                </div>
+            </div>
+
+            <!-- Form to Add New Case -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+                <h2 class="text-xl font-semibold mb-4 dark:text-white">Add a New Case</h2>
+                <form id="add-case-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="caseNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Case Number</label>
+                        <input type="text" id="caseNumber" name="caseNumber" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                     <div>
+                        <label for="partyName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Party Name</label>
+                        <input type="text" id="partyName" name="partyName" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="volume" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Volume</label>
+                        <input type="text" id="volume" name="volume" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="division" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Division</label>
+                        <select id="division" name="division" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option>High Court Division</option>
+                            <option>Appellate Division</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="initialNote" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Initial Note</label>
+                        <textarea id="initialNote" name="initialNote" rows="2" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                    </div>
+                    <div class="md:col-span-2 flex justify-end">
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Add Case
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table of Cases -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-12">SI</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Case Details</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Notes</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Audit Trail</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Workflow & Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cases-table-body" class="bg-white dark:bg-gray-800">
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Send Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold dark:text-white">Send Notification</h2>
+                 <button id="close-notification-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <form id="send-notification-form">
+                <input type="hidden" id="notification-recipient-hidden">
+                <!-- Admin's view: Dropdown -->
+                <div id="admin-recipient-area">
+                    <label for="notification-recipient" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To:</label>
+                    <select id="notification-recipient" name="notification-recipient" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <!-- Recipient options will be populated here -->
+                    </select>
+                </div>
+                <!-- User's view: Static text -->
+                <div id="user-recipient-area" class="hidden">
+                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300">To: <span class="font-bold">Admin</span></p>
+                </div>
+                <div class="mt-4">
+                    <label for="notification-message" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
+                    <textarea id="notification-message" name="notification-message" rows="4" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="cancel-notification-btn" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">
+                        Cancel
+                    </button>
+                    <button type="button" id="send-notification-submit-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Send
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Assign Modal -->
+    <div id="assign-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="assign-modal-title" class="text-xl font-semibold dark:text-white">Assign Case</h2>
+                 <button id="close-assign-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <form id="assign-case-form">
+                <input type="hidden" id="assign-doc-id">
+                <input type="hidden" id="assign-action-type">
+                <div>
+                    <label for="assign-user" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Assign to:</label>
+                    <select id="assign-user" name="assign-user" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <!-- User options for assignment will be populated here -->
+                    </select>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="cancel-assign-btn" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Assign
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Note Modal -->
+    <div id="add-note-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold dark:text-white">Add a Note</h2>
+                 <button id="close-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <form id="add-note-form">
+                <input type="hidden" id="note-doc-id">
+                <div>
+                    <label for="note-text" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Note</label>
+                    <textarea id="note-text" name="note-text" rows="4" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="cancel-note-btn" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Add Note
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Note Modal -->
+    <div id="edit-note-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold dark:text-white">Edit Note</h2>
+                 <button id="close-edit-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <form id="edit-note-form">
+                <input type="hidden" id="edit-note-doc-id">
+                <input type="hidden" id="edit-note-index">
+                <div>
+                    <label for="edit-note-text" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Note</label>
+                    <textarea id="edit-note-text" name="edit-note-text" rows="4" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="cancel-edit-note-btn" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-lg w-full">
+            <h2 class="text-xl font-semibold mb-4 dark:text-white">Edit Case</h2>
+            <form id="edit-case-form" class="space-y-4">
+                 <input type="hidden" id="edit-doc-id">
+                 <input type="text" id="edit-caseNumber" placeholder="Case Number" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                 <input type="text" id="edit-partyName" placeholder="Party Name" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                 <input type="text" id="edit-volume" placeholder="Volume" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                 <select id="edit-division" required class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <option>High Court Division</option>
+                    <option>Appellate Division</option>
+                 </select>
+                 <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="cancel-edit-btn" class="py-2 px-4 border rounded-md dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">Cancel</button>
+                    <button type="submit" class="py-2 px-4 border rounded-md text-white bg-indigo-600">Save Changes</button>
+                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Notes Modal -->
+    <div id="task-notes-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-lg w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="task-notes-modal-title" class="text-xl font-semibold dark:text-white">Task Notes</h2>
+                 <button id="close-task-notes-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <div id="task-notes-list" class="space-y-3 max-h-60 overflow-y-auto mb-4 border-b dark:border-gray-700 pb-4">
+                <!-- Task notes will be rendered here -->
+            </div>
+            <form id="add-task-note-form">
+                <input type="hidden" id="task-note-task-id">
+                <div>
+                    <label for="task-note-text" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Add a New Note</label>
+                    <textarea id="task-note-text" rows="3" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="submit" class="py-2 px-4 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Add Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Task Note Modal -->
+    <div id="edit-task-note-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold dark:text-white">Edit Task Note</h2>
+                 <button id="close-edit-task-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            <form id="edit-task-note-form">
+                <input type="hidden" id="edit-task-note-task-id">
+                <input type="hidden" id="edit-task-note-index">
+                <div>
+                    <label for="edit-task-note-text" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Note</label>
+                    <textarea id="edit-task-note-text" rows="4" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="cancel-edit-task-note-btn" class="py-2 px-4 border rounded-md dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">Cancel</button>
+                    <button type="submit" class="py-2 px-4 border rounded-md text-white bg-indigo-600">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom alert/message box -->
+    <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg hidden transition-opacity duration-300">
+        <p id="message-text"></p>
+    </div>
+
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setLogLevel, query, where, arrayUnion, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Configuration and Initialization ---
+        // This setup uses your provided config as a fallback, but prioritizes environment variables for deployment.
+        const firebaseConfig = {
+          apiKey: "AIzaSyAxSJl56RmG9-Mqe4to_VwqLz_5jsnahf8",
+          authDomain: "bld-case-manager.firebaseapp.com",
+          projectId: "bld-case-manager",
+          storageBucket: "bld-case-manager.appspot.com",
+          messagingSenderId: "648706777616",
+          appId: "1:648706777616:web:e06751b348f59465a8a095",
+          measurementId: "G-H4L7JNB50E"
+        };
+        const finalFirebaseConfig = typeof __firebase_config__ !== 'undefined' ? JSON.parse(__firebase_config__) : firebaseConfig;
+        const initialAuthToken = typeof __initial_auth_token__ !== 'undefined' ? __initial_auth_token__ : undefined;
+        const appId = finalFirebaseConfig.appId;
+
+
+        let app, auth, db, userId, casesCollectionRef, usersCollectionRef, notificationsCollectionRef, tasksCollectionRef;
+        let unsubscribeFromCases = null;
+        let unsubscribeFromDirectNotifications = null;
+        let unsubscribeFromBroadcastNotifications = null;
+        let unsubscribeFromTasks = null;
+        let localCases = [];
+        let localUsers = {};
+        let localNotifications = [];
+        let localTasks = [];
+        let currentLoggedInUser = null;
+        let adminViewingAsUser = null;
+
+        // --- UI Element References ---
+        const loginPage = document.getElementById('login-page');
+        const appPage = document.getElementById('app-page');
+        const loginForm = document.getElementById('login-form');
+        const usernameSelect = document.getElementById('username');
+        const loginError = document.getElementById('login-error');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loggedInUserSpan = document.getElementById('loggedInUser');
+        const adminPanel = document.getElementById('admin-panel');
+        const adminNav = document.getElementById('admin-nav');
+        const showDashboardBtn = document.getElementById('show-dashboard-btn');
+        const userNav = document.getElementById('user-nav');
+        const adminStatsPanel = document.getElementById('admin-stats-panel');
+        const userManagementSection = document.getElementById('user-management-section');
+        const toggleUserManagementBtn = document.getElementById('toggle-user-management-btn');
+        const userListContainer = document.getElementById('user-list-container');
+        const addCaseForm = document.getElementById('add-case-form');
+        const addUserForm = document.getElementById('add-user-form');
+        const casesTableBody = document.getElementById('cases-table-body');
+        const adminChangePassBtn = document.getElementById('admin-change-pass-btn');
+        
+        // Theme Toggle
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIconLight = document.getElementById('theme-icon-light');
+        const themeIconDark = document.getElementById('theme-icon-dark');
+
+        // Task Management elements
+        const taskManagementSection = document.getElementById('task-management-section');
+        const toggleTaskManagementBtn = document.getElementById('toggle-task-management-btn');
+        const assignTaskForm = document.getElementById('assign-task-form');
+        const assignedTasksContainer = document.getElementById('assigned-tasks-container');
+        const myTasksContainer = document.getElementById('my-tasks-container');
+        const taskNotesModal = document.getElementById('task-notes-modal');
+        const closeTaskNotesModalBtn = document.getElementById('close-task-notes-modal-btn');
+        const addTaskNoteForm = document.getElementById('add-task-note-form');
+        const editTaskNoteModal = document.getElementById('edit-task-note-modal');
+        const editTaskNoteForm = document.getElementById('edit-task-note-form');
+        const closeEditTaskNoteModalBtn = document.getElementById('close-edit-task-note-modal-btn');
+        const cancelEditTaskNoteBtn = document.getElementById('cancel-edit-task-note-btn');
+
+        // User Dashboard elements
+        const userDashboard = document.getElementById('user-dashboard');
+        const dateFromInput = document.getElementById('date-from');
+        const dateToInput = document.getElementById('date-to');
+        const filterReportBtn = document.getElementById('filter-report-btn');
+        const clearReportFilterBtn = document.getElementById('clear-report-filter-btn');
+        const downloadCsvBtn = document.getElementById('download-csv-btn');
+        const userAddedCountSpan = document.getElementById('user-added-count');
+        const userCheckedCountSpan = document.getElementById('user-checked-count');
+        const userConfirmedCountSpan = document.getElementById('user-confirmed-count');
+        const userCheckedByOthersCountSpan = document.getElementById('user-checked-by-others-count');
+        const userConfirmedByOthersCountSpan = document.getElementById('user-confirmed-by-others-count');
+        
+        // Admin Panel elements
+        const downloadAdminCsvBtn = document.getElementById('download-admin-csv-btn');
+
+        // Notification elements
+        const notificationBell = document.getElementById('notification-bell');
+        const notificationBadge = document.getElementById('notification-badge');
+        const notificationPanel = document.getElementById('notification-panel');
+        const notificationList = document.getElementById('notification-list');
+        const sendNotificationBtn = document.getElementById('send-notification-btn');
+        const notifyAdminBtn = document.getElementById('notify-admin-btn');
+        const notificationModal = document.getElementById('notification-modal');
+        const sendNotificationForm = document.getElementById('send-notification-form');
+        const sendNotificationSubmitBtn = document.getElementById('send-notification-submit-btn');
+        const closeNotificationModalBtn = document.getElementById('close-notification-modal-btn');
+        const cancelNotificationBtn = document.getElementById('cancel-notification-btn');
+        const adminRecipientArea = document.getElementById('admin-recipient-area');
+        const userRecipientArea = document.getElementById('user-recipient-area');
+        const notificationRecipientSelect = document.getElementById('notification-recipient');
+        const clearNotificationsBtn = document.getElementById('clear-notifications-btn');
+
+        // Modal elements
+        const assignModal = document.getElementById('assign-modal');
+        const assignCaseForm = document.getElementById('assign-case-form');
+        const closeAssignModalBtn = document.getElementById('close-assign-modal-btn');
+        const cancelAssignBtn = document.getElementById('cancel-assign-btn');
+        const assignUserSelect = document.getElementById('assign-user');
+        const addNoteModal = document.getElementById('add-note-modal');
+        const addNoteForm = document.getElementById('add-note-form');
+        const closeNoteModalBtn = document.getElementById('close-note-modal-btn');
+        const cancelNoteBtn = document.getElementById('cancel-note-btn');
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        
+        // Edit Modal elements
+        const editModal = document.getElementById('edit-modal');
+        const editCaseForm = document.getElementById('edit-case-form');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        
+        // Edit Note Modal elements
+        const editNoteModal = document.getElementById('edit-note-modal');
+        const editNoteForm = document.getElementById('edit-note-form');
+        const closeEditNoteModalBtn = document.getElementById('close-edit-note-modal-btn');
+        const cancelEditNoteBtn = document.getElementById('cancel-edit-note-btn');
+        
+        // User Filter Buttons
+        const filterAddedBtn = document.getElementById('filter-added-by-me');
+        const filterCheckedBtn = document.getElementById('filter-checked-by-me');
+        const filterConfirmedBtn = document.getElementById('filter-confirmed-by-me');
+        const filterCheckedByOthersBtn = document.getElementById('filter-checked-by-others');
+        const filterConfirmedByOthersBtn = document.getElementById('filter-confirmed-by-others');
+
+
+        // --- Main Application Logic ---
+
+        function populateUserFilterDropdown(selectId, users) {
+            const userFilter = document.getElementById(selectId);
+            if (!userFilter) return;
+            const currentSelection = userFilter.value;
+            // Clear existing user options but keep the 'All Users' option
+            while (userFilter.options.length > 1) userFilter.remove(1);
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user;
+                option.textContent = user;
+                userFilter.appendChild(option);
+            });
+            userFilter.value = currentSelection;
+        }
+
+        async function initializeAppAndLogin() {
+            try {
+                app = initializeApp(finalFirebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('debug');
+                
+                await authenticateUser(); // Ensure we are authenticated before any DB calls
+
+                usersCollectionRef = collection(db, `artifacts/${appId}/public/data/users`);
+                
+                await fetchUsersForLogin();
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+            }
+        }
+        
+        async function fetchUsersForLogin() {
+            try {
+                const unsubscribe = onSnapshot(usersCollectionRef, (snapshot) => {
+                    localUsers = {};
+                    snapshot.docs.forEach(doc => {
+                        localUsers[doc.id] = doc.data().password;
+                    });
+                    console.log("Fetched users:", localUsers);
+                    if (Object.keys(localUsers).length === 0 && !window.defaultsCreated) {
+                        window.defaultsCreated = true; // Prevent race condition
+                        createDefaultUsers();
+                    } else {
+                        updateUserDisplays();
+                    }
+                });
+            } catch (e) {
+                console.error("Could not fetch users, creating defaults...", e);
+                if (!window.defaultsCreated) {
+                    window.defaultsCreated = true;
+                    createDefaultUsers();
+                }
+            }
+        }
+        
+        async function createDefaultUsers() {
+             const defaultUsers = {
+                'admin': 'adminpass', 'Sheikh': 'pass123', 'Shourav': 'pass123', 'Fahim': 'pass123'
+            };
+            for (const username in defaultUsers) {
+                await setDoc(doc(usersCollectionRef, username), { password: defaultUsers[username] });
+            }
+        }
+
+        function populateLoginDropdown() {
+            usernameSelect.innerHTML = '<option value="" disabled selected>Select your name</option>';
+            for (const username in localUsers) {
+                const option = document.createElement('option');
+                option.value = username;
+                option.textContent = username.charAt(0).toUpperCase() + username.slice(1);
+                usernameSelect.appendChild(option);
+            }
+        }
+        
+        async function authenticateUser() {
+            return new Promise((resolve, reject) => {
+                 onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        console.log("Already signed in with UID:", user.uid);
+                        userId = user.uid;
+                        resolve(user);
+                    } else {
+                         try {
+                            if (initialAuthToken) {
+                                const userCredential = await signInWithCustomToken(auth, initialAuthToken);
+                                userId = userCredential.user.uid;
+                                console.log("Signed in with custom token UID:", userId);
+                                resolve(userCredential.user);
+                            } else {
+                                const userCredential = await signInAnonymously(auth);
+                                userId = userCredential.user.uid;
+                                console.log("Signed in anonymously with UID:", userId);
+                                resolve(userCredential.user);
+                            }
+                        } catch (error) {
+                             console.error("Authentication failed:", error);
+                             reject(error);
+                        }
+                    }
+                });
+            });
+        }
+
+        function setupAppForUser() {
+            if (!userId) return;
+            casesCollectionRef = collection(db, `artifacts/${appId}/public/data/cases`);
+            notificationsCollectionRef = collection(db, `artifacts/${appId}/public/data/notifications`);
+            tasksCollectionRef = collection(db, `artifacts/${appId}/public/data/tasks`);
+            listenForCaseUpdates();
+            listenForNotifications();
+            listenForTasks();
+        }
+
+        function displayMessage(message, type = 'success') {
+            messageText.textContent = message;
+            messageBox.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
+            messageBox.classList.add(type === 'success' ? 'bg-green-500' : 'bg-red-500');
+            setTimeout(() => messageBox.classList.add('hidden'), 3000);
+        }
+
+        function getStatusInfo(caseData) {
+            switch (caseData.status) {
+                case 'Uploaded': return { text: 'Uploaded', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
+                case 'Pending Check': return { text: `Pending Check (${caseData.assignedForCheck})`, color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' };
+                case 'Checked': return { text: 'Checked', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300' };
+                case 'Pending Confirmation': return { text: `Pending Confirmation (${caseData.assignedForConfirm})`, color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' };
+                case 'Confirmed': return { text: 'Confirmed', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' };
+                default: return { text: 'Unknown', color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
+            }
+        }
+        
+        function getLocalDateString(dateStr) {
+            if (!dateStr) return null;
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date)) return null;
+                return date.toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function renderCases(cases) {
+            casesTableBody.innerHTML = '';
+
+            if (cases.length === 0) {
+                 casesTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No cases found.</td></tr>`;
+                 return;
+            }
+            
+            // Group cases by date for all users
+            const groupedCases = cases.reduce((acc, caseData) => {
+                const date = getLocalDateString(caseData.createdAt);
+                if (!date) return acc;
+                if (!acc[date]) {
+                    acc[date] = [];
+                }
+                acc[date].push(caseData);
+                return acc;
+            }, {});
+
+            // Sort dates so the most recent date group is at the top
+            const sortedDates = Object.keys(groupedCases).sort((a, b) => new Date(b) - new Date(a));
+            
+            let si_counter = 1;
+            sortedDates.forEach(date => {
+                // Render the date header row
+                const headerRow = document.createElement('tr');
+                headerRow.className = 'date-header-row';
+                const formattedDate = new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+                headerRow.innerHTML = `<td colspan="5" class="px-6 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-800 dark:text-gray-200 font-bold text-sm">${formattedDate}</td>`;
+                casesTableBody.appendChild(headerRow);
+
+                // Sort cases within the date group by creation time (newest first)
+                const sortedCasesForDate = groupedCases[date].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                // Render each case row for that date
+                sortedCasesForDate.forEach(caseData => {
+                    renderCaseRow(caseData, si_counter++);
+                });
+            });
+        }
+
+        function renderCaseRow(caseData, si_counter) {
+            const row = document.createElement('tr');
+            row.classList.add('case-row');
+            
+            const activeUser = adminViewingAsUser || currentLoggedInUser;
+            const isAdminView = currentLoggedInUser === 'admin' && !adminViewingAsUser;
+
+            if (currentLoggedInUser !== 'admin') {
+                if (caseData.confirmedBy === currentLoggedInUser) {
+                    row.classList.add('bg-green-50', 'dark:bg-green-900/20');
+                } else if (caseData.checkedBy === currentLoggedInUser) {
+                    row.classList.add('bg-yellow-50', 'dark:bg-yellow-900/20');
+                } else if (caseData.addedBy === currentLoggedInUser) {
+                    row.classList.add('bg-blue-50', 'dark:bg-blue-900/20');
+                }
+            }
+
+            const statusInfo = getStatusInfo(caseData);
+
+            let workflowHtml = `<div class="flex flex-col items-start space-y-2">
+                <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.color}">${statusInfo.text}</span>`;
+            
+            switch (caseData.status) {
+                case 'Uploaded':
+                    if (caseData.addedBy === activeUser || isAdminView) {
+                        workflowHtml += `<button data-id="${caseData.id}" data-action="assign-check" class="assign-btn text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-md px-3 py-1 shadow-sm">Assign for Check</button>`;
+                    }
+                    break;
+                case 'Pending Check':
+                    if (caseData.assignedForCheck === activeUser) {
+                        workflowHtml += `<button data-id="${caseData.id}" class="mark-checked-btn text-xs font-semibold text-white bg-yellow-500 hover:bg-yellow-600 rounded-md px-3 py-1 shadow-sm">Mark as Checked</button>`;
+                    }
+                    if (caseData.addedBy === activeUser || isAdminView) {
+                         workflowHtml += `<button data-id="${caseData.id}" data-action="assign-check" class="assign-btn text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-md px-3 py-1 shadow-sm mt-1">Re-assign Check</button>`;
+                    }
+                    break;
+                case 'Checked':
+                    if (caseData.checkedBy === activeUser || isAdminView) {
+                        workflowHtml += `<button data-id="${caseData.id}" data-action="assign-confirm" class="assign-btn text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-md px-3 py-1 shadow-sm">Assign for Confirm</button>`;
+                    }
+                    break;
+                case 'Pending Confirmation':
+                    if (caseData.assignedForConfirm === activeUser) {
+                        workflowHtml += `<button data-id="${caseData.id}" class="mark-confirmed-btn text-xs font-semibold text-white bg-green-500 hover:bg-green-600 rounded-md px-3 py-1 shadow-sm">Mark as Confirmed</button>`;
+                    }
+                    if (caseData.checkedBy === activeUser || isAdminView) {
+                         workflowHtml += `<button data-id="${caseData.id}" data-action="assign-confirm" class="assign-btn text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-md px-3 py-1 shadow-sm mt-1">Re-assign Confirm</button>`;
+                    }
+                    break;
+            }
+            
+            workflowHtml += `<button data-id="${caseData.id}" class="add-note-btn text-xs font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md px-3 py-1 shadow-sm mt-2 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Add Note</button>`;
+            
+            if (caseData.addedBy === activeUser || isAdminView) {
+                 workflowHtml += `<div class="flex space-x-2 pt-2">
+                                     <button data-id="${caseData.id}" class="edit-btn text-xs font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Edit</button>
+                                     <button data-id="${caseData.id}" class="delete-btn text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400">Delete</button>
+                                  </div>`;
+            }
+            workflowHtml += `</div>`;
+
+            let notesHtml = '<div class="space-y-2">';
+            if (caseData.notes && caseData.notes.length > 0) {
+                caseData.notes.forEach((note, index) => {
+                    let editButtonHtml = '';
+                    if (note.user === activeUser || isAdminView) {
+                        editButtonHtml = `<button data-id="${caseData.id}" data-note-index="${index}" class="edit-note-btn text-xs font-medium text-indigo-600 hover:text-indigo-800 ml-2">Edit</button>`;
+                    }
+                    notesHtml += `
+                        <div class="text-xs p-2 bg-gray-50 dark:bg-gray-700/50 rounded border border-gray-200 dark:border-gray-700">
+                            <p class="text-gray-800 dark:text-gray-200">${note.text}</p>
+                            <div class="text-gray-500 dark:text-gray-400 mt-1 font-semibold flex justify-between items-center">
+                                <span>${note.user} - <span class="font-normal">${new Date(note.timestamp).toLocaleString()}</span></span>
+                                ${editButtonHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                notesHtml += `<p class="text-xs text-gray-400 dark:text-gray-500">No notes yet.</p>`;
+            }
+            notesHtml += '</div>';
+            
+            let auditTrailHtml = `
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div><strong>Added by:</strong> ${caseData.addedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${new Date(caseData.createdAt).toLocaleString() || ''}</div></div>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div><strong>Checked by:</strong> ${caseData.checkedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${caseData.checkedAt ? new Date(caseData.checkedAt).toLocaleString() : ''}</div></div>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                    <div><strong>Confirmed by:</strong> ${caseData.confirmedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${caseData.confirmedAt ? new Date(caseData.confirmedAt).toLocaleString() : ''}</div></div>
+                </div>
+            `;
+
+            if (caseData.auditLog && caseData.auditLog.length > 0) {
+                caseData.auditLog.forEach(log => {
+                    auditTrailHtml += `
+                       <div class="flex items-center mt-2 border-t pt-2 border-gray-200 dark:border-gray-700">
+                           <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                           <div><strong>${log.action}</strong><div class="text-gray-500 dark:text-gray-400">${new Date(log.timestamp).toLocaleString()}</div></div>
+                       </div>
+                    `;
+                });
+            }
+
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 align-top">${si_counter}</td>
+                <td class="px-6 py-4 align-top">
+                    <div class="text-lg font-bold text-gray-900 dark:text-white">${caseData.caseNumber}</div>
+                    <div class="text-sm text-gray-700 dark:text-gray-300 font-medium">${caseData.partyName || 'N/A'}</div>
+                    <div class="mt-2 flex items-center text-xs text-gray-500 dark:text-gray-400">
+                        <span>Vol: ${caseData.volume || 'N/A'}</span><span class="mx-2">|</span><span>${caseData.division}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 align-top">${notesHtml}</td>
+                <td class="px-6 py-4 align-top text-xs text-gray-600 dark:text-gray-400 space-y-2">${auditTrailHtml}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium align-top">${workflowHtml}</td>
+            `;
+            casesTableBody.appendChild(row);
+        }
+
+        function listenForCaseUpdates() {
+            if (unsubscribeFromCases) unsubscribeFromCases();
+            
+            let casesQuery = query(casesCollectionRef);
+
+            unsubscribeFromCases = onSnapshot(casesQuery, (snapshot) => {
+                localCases = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // This will trigger a re-render of tasks with updated progress
+                if (currentLoggedInUser === 'admin') {
+                    renderAllTasksForAdmin();
+                    if (adminViewingAsUser) {
+                        renderTasksForUser(adminViewingAsUser);
+                    }
+                } else {
+                    renderTasksForUser(currentLoggedInUser);
+                }
+
+                if (currentLoggedInUser === 'admin') {
+                    const uniqueAddedUsers = [...new Set(localCases.map(c => c.addedBy).filter(Boolean))];
+                    const uniqueCheckedUsers = [...new Set(localCases.map(c => c.checkedBy).filter(Boolean))];
+                    const uniqueConfirmedUsers = [...new Set(localCases.map(c => c.confirmedBy).filter(Boolean))];
+                    populateUserFilterDropdown('filter-user-name', uniqueAddedUsers);
+                    populateUserFilterDropdown('filter-checked-by', uniqueCheckedUsers);
+                    populateUserFilterDropdown('filter-confirmed-by', uniqueConfirmedUsers);
+                    
+                    if (adminViewingAsUser) {
+                        applyCombinedUserFilters(adminViewingAsUser);
+                    } else {
+                        applyAdminFilters();
+                    }
+                } else {
+                    applyCombinedUserFilters();
+                }
+                
+            }, (error) => {
+                console.error("Error listening for case updates:", error);
+                displayMessage("Could not fetch case data.", "error");
+            });
+        }
+
+        async function handleAddCase(e) {
+            e.preventDefault();
+            const initialNoteText = addCaseForm.initialNote.value.trim();
+            const notes = [];
+            if (initialNoteText) {
+                notes.push({
+                    text: initialNoteText,
+                    user: currentLoggedInUser,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            const newCase = {
+                caseNumber: addCaseForm.caseNumber.value,
+                partyName: addCaseForm.partyName.value,
+                volume: addCaseForm.volume.value,
+                division: addCaseForm.division.value,
+                status: 'Uploaded',
+                createdAt: new Date().toISOString(),
+                addedBy: currentLoggedInUser,
+                involvedUsers: [currentLoggedInUser],
+                auditLog: [],
+                notes: notes
+            };
+            try {
+                await addDoc(casesCollectionRef, newCase);
+                displayMessage("Case added successfully!", "success");
+                addCaseForm.reset();
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                displayMessage("Failed to add case.", "error");
+            }
+        }
+        
+        function openAssignModal(docId, actionType) {
+            document.getElementById('assign-doc-id').value = docId;
+            document.getElementById('assign-action-type').value = actionType;
+            document.getElementById('assign-modal-title').textContent = actionType === 'assign-check' ? 'Assign for Checking' : 'Assign for Confirmation';
+            
+            assignUserSelect.innerHTML = '';
+            Object.keys(localUsers).filter(u => u !== 'admin').forEach(user => {
+                const option = document.createElement('option');
+                option.value = user;
+                option.textContent = user;
+                assignUserSelect.appendChild(option);
+            });
+
+            assignModal.classList.remove('hidden');
+        }
+
+        async function handleAssignCase(e) {
+            e.preventDefault();
+            const docId = document.getElementById('assign-doc-id').value;
+            const actionType = document.getElementById('assign-action-type').value;
+            const assignedUser = assignUserSelect.value;
+            
+            if (!docId || !assignedUser) return;
+
+            const caseToUpdate = localCases.find(c => c.id === docId);
+            if (!caseToUpdate) {
+                displayMessage("Case not found.", "error");
+                return;
+            }
+
+            let updateData;
+            let auditAction = '';
+            
+            if (actionType === 'assign-check') {
+                updateData = { status: 'Pending Check', assignedForCheck: assignedUser, involvedUsers: arrayUnion(assignedUser) };
+                if (caseToUpdate.status === 'Pending Check') {
+                    auditAction = `Re-assigned for Check to ${assignedUser} by ${currentLoggedInUser}`;
+                } else {
+                    auditAction = `Assigned for Check to ${assignedUser} by ${currentLoggedInUser}`;
+                }
+            } else { // assign-confirm
+                updateData = { status: 'Pending Confirmation', assignedForConfirm: assignedUser, involvedUsers: arrayUnion(assignedUser) };
+                if (caseToUpdate.status === 'Pending Confirmation') {
+                    auditAction = `Re-assigned for Confirm to ${assignedUser} by ${currentLoggedInUser}`;
+                } else {
+                    auditAction = `Assigned for Confirm to ${assignedUser} by ${currentLoggedInUser}`;
+                }
+            }
+
+            const auditLogEntry = {
+                action: auditAction,
+                timestamp: new Date().toISOString()
+            };
+            updateData.auditLog = arrayUnion(auditLogEntry);
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await updateDoc(docRef, updateData);
+                displayMessage(`Case assigned to ${assignedUser}`, 'success');
+                assignModal.classList.add('hidden');
+            } catch (error) {
+                console.error("Error assigning case:", error);
+                displayMessage("Failed to assign case.", "error");
+            }
+        }
+        
+        async function handleMarkAsChecked(docId) {
+            const updateData = {
+                status: 'Checked',
+                checkedBy: currentLoggedInUser,
+                checkedAt: new Date().toISOString(),
+                assignedForCheck: ''
+            };
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await updateDoc(docRef, updateData);
+                displayMessage('Case marked as checked!', 'success');
+            } catch(error) {
+                console.error("Error marking as checked:", error);
+                displayMessage("Operation failed.", "error");
+            }
+        }
+        
+        async function handleMarkAsConfirmed(docId) {
+             const updateData = {
+                status: 'Confirmed',
+                confirmedBy: currentLoggedInUser,
+                confirmedAt: new Date().toISOString(),
+                assignedForConfirm: ''
+            };
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await updateDoc(docRef, updateData);
+                displayMessage('Case marked as confirmed!', 'success');
+            } catch(error) {
+                console.error("Error marking as confirmed:", error);
+                displayMessage("Operation failed.", "error");
+            }
+        }
+
+        async function handleDeleteCase(docId) {
+            if (!docId) return;
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await deleteDoc(docRef);
+                displayMessage("Case deleted successfully!", "success");
+            } catch (error) {
+                console.error("Error deleting document: ", error);
+                displayMessage("Failed to delete case.", "error");
+            }
+        }
+        
+        function openEditModal(docId) {
+            const caseToEdit = localCases.find(c => c.id === docId);
+            if (!caseToEdit) return;
+            
+            document.getElementById('edit-doc-id').value = docId;
+            document.getElementById('edit-caseNumber').value = caseToEdit.caseNumber;
+            document.getElementById('edit-partyName').value = caseToEdit.partyName;
+            document.getElementById('edit-volume').value = caseToEdit.volume;
+            document.getElementById('edit-division').value = caseToEdit.division;
+            
+            editModal.classList.remove('hidden');
+        }
+
+        function openAddNoteModal(docId) {
+            document.getElementById('note-doc-id').value = docId;
+            addNoteForm.reset();
+            addNoteModal.classList.remove('hidden');
+        }
+
+        async function handleAddNote(e) {
+            e.preventDefault();
+            const docId = document.getElementById('note-doc-id').value;
+            const noteText = document.getElementById('note-text').value.trim();
+            if (!docId || !noteText) return;
+
+            const newNote = {
+                text: noteText,
+                user: currentLoggedInUser,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await updateDoc(docRef, {
+                    notes: arrayUnion(newNote)
+                });
+                displayMessage('Note added successfully!', 'success');
+                addNoteModal.classList.add('hidden');
+            } catch (error) {
+                console.error("Error adding note:", error);
+                displayMessage("Failed to add note.", "error");
+            }
+        }
+
+        function openEditNoteModal(docId, noteIndex) {
+            const caseData = localCases.find(c => c.id === docId);
+            if (!caseData || !caseData.notes[noteIndex]) return;
+
+            const noteToEdit = caseData.notes[noteIndex];
+            document.getElementById('edit-note-doc-id').value = docId;
+            document.getElementById('edit-note-index').value = noteIndex;
+            document.getElementById('edit-note-text').value = noteToEdit.text;
+            editNoteModal.classList.remove('hidden');
+        }
+
+        async function handleEditNote(e) {
+            e.preventDefault();
+            const docId = document.getElementById('edit-note-doc-id').value;
+            const noteIndex = parseInt(document.getElementById('edit-note-index').value, 10);
+            const newNoteText = document.getElementById('edit-note-text').value.trim();
+
+            if (!docId || isNaN(noteIndex) || !newNoteText) return;
+
+            const caseToUpdate = localCases.find(c => c.id === docId);
+            if (!caseToUpdate) return;
+
+            const updatedNotes = [...caseToUpdate.notes];
+            updatedNotes[noteIndex].text = newNoteText;
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await updateDoc(docRef, { notes: updatedNotes });
+                displayMessage('Note updated successfully!', 'success');
+                editNoteModal.classList.add('hidden');
+            } catch (error) {
+                console.error("Error updating note:", error);
+                displayMessage("Failed to update note.", "error");
+            }
+        }
+
+        async function handleUpdateCase(e) {
+            e.preventDefault();
+            const docId = document.getElementById('edit-doc-id').value;
+            const updatedData = {
+                caseNumber: document.getElementById('edit-caseNumber').value,
+                partyName: document.getElementById('edit-partyName').value,
+                volume: document.getElementById('edit-volume').value,
+                division: document.getElementById('edit-division').value,
+            };
+            try {
+                await updateDoc(doc(casesCollectionRef, docId), updatedData);
+                displayMessage("Case updated successfully!", "success");
+                editModal.classList.add('hidden');
+            } catch (error) {
+                console.error("Error updating case:", error);
+                displayMessage("Failed to update case.", "error");
+            }
+        }
+        
+        function getAdminFilteredCases() {
+            let filteredCases = [...localCases];
+            
+            const caseNo = document.getElementById('filter-case-no').value.toLowerCase();
+            if (caseNo) {
+                filteredCases = filteredCases.filter(c => c.caseNumber.toLowerCase().includes(caseNo));
+            }
+            
+            const partyName = document.getElementById('filter-party-name').value.toLowerCase();
+            if (partyName) {
+                filteredCases = filteredCases.filter(c => c.partyName && c.partyName.toLowerCase().includes(partyName));
+            }
+
+            const volume = document.getElementById('filter-volume').value.toLowerCase();
+            if (volume) {
+                filteredCases = filteredCases.filter(c => c.volume && c.volume.toLowerCase().includes(volume));
+            }
+
+            const addedBy = document.getElementById('filter-user-name').value;
+            if (addedBy) {
+                filteredCases = filteredCases.filter(c => c.addedBy === addedBy);
+            }
+            
+            const checkedBy = document.getElementById('filter-checked-by').value;
+            if (checkedBy) {
+                filteredCases = filteredCases.filter(c => c.checkedBy === checkedBy);
+            }
+
+            const confirmedBy = document.getElementById('filter-confirmed-by').value;
+            if (confirmedBy) {
+                filteredCases = filteredCases.filter(c => c.confirmedBy === confirmedBy);
+            }
+            
+            const fromDateStr = document.getElementById('filter-date-from').value;
+            const toDateStr = document.getElementById('filter-date-to').value;
+            if (fromDateStr && toDateStr) {
+                const startDate = new Date(fromDateStr);
+                startDate.setHours(0, 0, 0, 0);
+                const endDate = new Date(toDateStr);
+                endDate.setHours(23, 59, 59, 999);
+                filteredCases = filteredCases.filter(c => {
+                    if (!c.createdAt) return false;
+                    const caseDate = new Date(c.createdAt);
+                    return caseDate >= startDate && caseDate <= endDate;
+                });
+            }
+            return filteredCases;
+        }
+
+        function applyAdminFilters() {
+            const filteredCases = getAdminFilteredCases();
+            renderCases(filteredCases);
+
+            // Update stats based on the filtered results
+            const addedCount = filteredCases.length;
+            const checkedCount = filteredCases.filter(c => c.checkedBy).length;
+            const confirmedCount = filteredCases.filter(c => c.confirmedBy).length;
+            const pendingCheckCount = filteredCases.filter(c => c.status === 'Pending Check').length;
+            const pendingConfirmCount = filteredCases.filter(c => c.status === 'Pending Confirmation').length;
+
+            document.getElementById('admin-stat-added').textContent = addedCount;
+            document.getElementById('admin-stat-checked').textContent = checkedCount;
+            document.getElementById('admin-stat-confirmed').textContent = confirmedCount;
+            document.getElementById('admin-stat-pending-check').textContent = pendingCheckCount;
+            document.getElementById('admin-stat-pending-confirm').textContent = pendingConfirmCount;
+        }
+        
+        function sanitizeCsvField(field) {
+            const strField = String(field || '').replace(/"/g, '""');
+            return `"${strField}"`;
+        }
+
+        function formatBdtDateTime(isoString) {
+            if (!isoString) {
+                return { date: "", time: "" };
+            }
+            try {
+                const dateObj = new Date(isoString);
+                const date = dateObj.toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' }); // YYYY-MM-DD format
+                const time = dateObj.toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: true }); // HH:MM:SS AM/PM format
+                return { date, time };
+            } catch (e) {
+                return { date: "", time: "" }; // Return empty if the date string is invalid
+            }
+        }
+
+        function downloadAdminCSV() {
+            const casesToExport = getAdminFilteredCases();
+            if (casesToExport.length === 0) {
+                displayMessage("No data to export for the selected filters.", "error");
+                return;
+            }
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            const headers = ["Case Number", "Party Name", "Volume", "Division", "Status", "Added By", "Added Date", "Added Time", "Checked By", "Checked Date", "Checked Time", "Confirmed By", "Confirmed Date", "Confirmed Time"];
+            csvContent += headers.join(",") + "\r\n";
+
+            casesToExport.forEach(c => {
+                const added = formatBdtDateTime(c.createdAt);
+                const checked = formatBdtDateTime(c.checkedAt);
+                const confirmed = formatBdtDateTime(c.confirmedAt);
+                const rowData = [
+                    c.caseNumber, c.partyName, c.volume, c.division, c.status, 
+                    c.addedBy, added.date, added.time, 
+                    c.checkedBy, checked.date, checked.time,
+                    c.confirmedBy, confirmed.date, confirmed.time
+                ].map(sanitizeCsvField);
+                csvContent += rowData.join(",") + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `admin_case_report.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // --- Combined User Filter and Dashboard Logic ---
+        function applyCombinedUserFilters(username = currentLoggedInUser) {
+            const dashboardTitleName = document.getElementById('dashboard-title-user-name');
+            if (adminViewingAsUser) {
+                dashboardTitleName.textContent = `${adminViewingAsUser}'s`;
+            } else {
+                dashboardTitleName.textContent = 'My';
+            }
+
+            // 1. Get Date Range
+            let fromDateStr = dateFromInput.value;
+            let toDateStr = dateToInput.value;
+
+            if (!fromDateStr && !toDateStr) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                fromDateStr = todayStr;
+                toDateStr = todayStr;
+            } else if (fromDateStr && !toDateStr) {
+                toDateStr = fromDateStr;
+            } else if (!fromDateStr && toDateStr) {
+                fromDateStr = toDateStr;
+            }
+            
+            const startDate = new Date(fromDateStr);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(toDateStr);
+            endDate.setHours(23, 59, 59, 999);
+
+            // 2. Get active status filters
+            const showAdded = filterAddedBtn.classList.contains('active');
+            const showChecked = filterCheckedBtn.classList.contains('active');
+            const showConfirmed = filterConfirmedBtn.classList.contains('active');
+            const showCheckedByOthers = filterCheckedByOthersBtn.classList.contains('active');
+            const showConfirmedByOthers = filterConfirmedByOthersBtn.classList.contains('active');
+            const noStatusFilter = !showAdded && !showChecked && !showConfirmed && !showCheckedByOthers && !showConfirmedByOthers;
+
+            // 3. Calculate Stats and Filter Cases for Display simultaneously
+            let addedCount = 0;
+            let checkedCount = 0;
+            let confirmedCount = 0;
+            let checkedByOthersCount = 0;
+            let confirmedByOthersCount = 0;
+            
+            const casesToDisplay = [];
+            const userCases = localCases.filter(c => c.involvedUsers.includes(username));
+
+            userCases.forEach(c => {
+                let displayThisCase = false;
+                
+                // My actions in range
+                const wasAddedInRange = c.addedBy === username && c.createdAt && new Date(c.createdAt) >= startDate && new Date(c.createdAt) <= endDate;
+                const wasCheckedInRange = c.checkedBy === username && c.checkedAt && new Date(c.checkedAt) >= startDate && new Date(c.checkedAt) <= endDate;
+                const wasConfirmedInRange = c.confirmedBy === username && c.confirmedAt && new Date(c.confirmedAt) >= startDate && new Date(c.confirmedAt) <= endDate;
+
+                // Actions by others on my cases in range
+                const wasCheckedByOthersInRange = c.addedBy === username && c.checkedBy && c.checkedBy !== username && c.checkedAt && new Date(c.checkedAt) >= startDate && new Date(c.checkedAt) <= endDate;
+                const wasConfirmedByOthersInRange = c.addedBy === username && c.confirmedBy && c.confirmedBy !== username && c.confirmedAt && new Date(c.confirmedAt) >= startDate && new Date(c.confirmedAt) <= endDate;
+
+                if(wasAddedInRange) addedCount++;
+                if(wasCheckedInRange) checkedCount++;
+                if(wasConfirmedInRange) confirmedCount++;
+                if(wasCheckedByOthersInRange) checkedByOthersCount++;
+                if(wasConfirmedByOthersInRange) confirmedByOthersCount++;
+
+                if (noStatusFilter) {
+                    displayThisCase = true;
+                } else {
+                    if (showAdded && wasAddedInRange) displayThisCase = true;
+                    if (showChecked && wasCheckedInRange) displayThisCase = true;
+                    if (showConfirmed && wasConfirmedInRange) displayThisCase = true;
+                    if (showCheckedByOthers && wasCheckedByOthersInRange) displayThisCase = true;
+                    if (showConfirmedByOthers && wasConfirmedByOthersInRange) displayThisCase = true;
+                }
+
+                if(displayThisCase) {
+                    casesToDisplay.push(c);
+                }
+            });
+            
+            // 4. Update UI
+            userAddedCountSpan.textContent = addedCount;
+            userCheckedCountSpan.textContent = checkedCount;
+            userConfirmedCountSpan.textContent = confirmedCount;
+            userCheckedByOthersCountSpan.textContent = checkedByOthersCount;
+            userConfirmedByOthersCountSpan.textContent = confirmedByOthersCount;
+            renderCases(casesToDisplay);
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = loginForm.username.value;
+            const password = loginForm.password.value;
+
+            if (localUsers[username] && localUsers[username] === password) {
+                currentLoggedInUser = username;
+                loggedInUserSpan.textContent = username;
+                
+                appPage.classList.remove('hidden');
+                loginPage.classList.add('hidden');
+                loginError.classList.add('hidden');
+                
+                if (currentLoggedInUser === 'admin') {
+                    adminPanel.classList.remove('hidden');
+                    adminNav.classList.remove('hidden');
+                    adminStatsPanel.classList.remove('hidden');
+                    userNav.classList.add('hidden');
+                    userDashboard.classList.add('hidden');
+
+                    const searchBtn = document.getElementById('search-btn');
+                    const clearFilterBtn = document.getElementById('clear-filter-btn');
+
+                    searchBtn.addEventListener('click', applyAdminFilters);
+                    downloadAdminCsvBtn.addEventListener('click', downloadAdminCSV);
+                    
+                    clearFilterBtn.addEventListener('click', () => {
+                        document.getElementById('filter-container').querySelectorAll('input, select').forEach(el => el.value = '');
+                        applyAdminFilters();
+                    });
+                    
+                    populateUserList();
+                    // Populate task assignment user dropdown
+                    const assignTaskUserSelect = document.getElementById('assign-task-user');
+                    assignTaskUserSelect.innerHTML = '';
+                    Object.keys(localUsers).filter(u => u !== 'admin').forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user;
+                        option.textContent = user;
+                        assignTaskUserSelect.appendChild(option);
+                    });
+
+                } else {
+                    adminPanel.classList.add('hidden');
+                    adminNav.classList.add('hidden');
+                    userNav.classList.remove('hidden');
+                    adminStatsPanel.classList.add('hidden');
+                    userManagementSection.classList.add('hidden');
+                    taskManagementSection.classList.add('hidden');
+                    userDashboard.classList.remove('hidden');
+                    applyCombinedUserFilters(); // Initial load for today
+                }
+
+                setupAppForUser();
+            } else {
+                loginError.classList.remove('hidden');
+                loginError.textContent = 'Invalid username or password.';
+            }
+        }
+
+        function handleLogout() {
+            currentLoggedInUser = null;
+            adminViewingAsUser = null;
+            if (unsubscribeFromCases) unsubscribeFromCases();
+            if (unsubscribeFromDirectNotifications) unsubscribeFromDirectNotifications();
+            if (unsubscribeFromBroadcastNotifications) unsubscribeFromBroadcastNotifications();
+            if (unsubscribeFromTasks) unsubscribeFromTasks();
+            localCases = [];
+            localNotifications = [];
+            localTasks = [];
+            casesTableBody.innerHTML = '';
+            
+            appPage.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+            adminPanel.classList.add('hidden');
+            adminNav.classList.add('hidden');
+            userNav.classList.add('hidden');
+            adminStatsPanel.classList.add('hidden');
+            userManagementSection.classList.add('hidden');
+            taskManagementSection.classList.add('hidden');
+            userDashboard.classList.add('hidden');
+            populateLoginDropdown();
+        }
+        
+        async function handleAddUser(e) {
+            e.preventDefault();
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            if (!username || !password) return;
+            
+            try {
+                await setDoc(doc(usersCollectionRef, username), { password });
+                displayMessage(`User ${username} added successfully!`, 'success');
+                e.target.reset();
+            } catch(error) {
+                displayMessage('Failed to add user.', 'error');
+            }
+        }
+        
+        async function handleChangePassword(username) {
+            const passwordInput = document.getElementById(`pass-${username}`);
+            const newPassword = passwordInput.value;
+            if (!username || !newPassword) return;
+            
+            try {
+                await setDoc(doc(usersCollectionRef, username), { password: newPassword });
+                displayMessage(`Password for ${username} updated!`, 'success');
+                passwordInput.value = '';
+            } catch(error) {
+                displayMessage('Failed to change password.', 'error');
+            }
+        }
+
+        async function handleDeleteUser(username) {
+            if (!username || username === 'admin') {
+                displayMessage("Cannot delete the admin account.", "error");
+                return;
+            }
+            
+            try {
+                await deleteDoc(doc(usersCollectionRef, username));
+                displayMessage(`User ${username} deleted successfully!`, 'success');
+            } catch(error) {
+                console.error("Error deleting user:", error);
+                displayMessage('Failed to delete user.', 'error');
+            }
+        }
+        
+        function populateUserList() {
+            const userListContainer = document.getElementById('user-list-container');
+            if (!userListContainer) return;
+            userListContainer.innerHTML = ''; // Clear previous list
+
+            for (const username in localUsers) {
+                if (username === 'admin') continue;
+                const userDiv = document.createElement('div');
+                userDiv.className = 'grid grid-cols-1 md:grid-cols-7 gap-2 items-center';
+                userDiv.innerHTML = `
+                    <span class="font-medium col-span-1">${username}</span>
+                    <input type="password" id="pass-${username}" placeholder="New Password" class="col-span-2 block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <button data-username="${username}" class="view-pass-btn col-span-1 py-1 px-3 text-sm font-medium text-white bg-gray-500 rounded-md hover:bg-gray-600">View</button>
+                    <button data-username="${username}" class="change-pass-btn col-span-1 py-1 px-3 text-sm font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600">Change</button>
+                    <button data-username="${username}" class="delete-user-btn col-span-1 py-1 px-3 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Delete</button>
+                    <button data-username="${username}" class="view-dashboard-btn col-span-1 py-1 px-3 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">View</button>
+                `;
+                userListContainer.appendChild(userDiv);
+            }
+        }
+        
+        function updateUserDisplays() {
+            populateLoginDropdown();
+            if (currentLoggedInUser === 'admin') {
+                populateUserList();
+            }
+        }
+        
+        function downloadCSV() {
+            const userToReport = adminViewingAsUser || currentLoggedInUser;
+            // 1. Get Date Range
+            let fromDateStr = dateFromInput.value;
+            let toDateStr = dateToInput.value;
+
+            if (!fromDateStr && !toDateStr) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                fromDateStr = todayStr;
+                toDateStr = todayStr;
+            } else if (fromDateStr && !toDateStr) toDateStr = fromDateStr;
+            else if (!fromDateStr && toDateStr) fromDateStr = toDateStr;
+            
+            const startDate = new Date(fromDateStr);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(toDateStr);
+            endDate.setHours(23, 59, 59, 999);
+
+            // 2. Get active status filters
+            const showAdded = filterAddedBtn.classList.contains('active');
+            const showChecked = filterCheckedBtn.classList.contains('active');
+            const showConfirmed = filterConfirmedBtn.classList.contains('active');
+            const noStatusFilter = !showAdded && !showChecked && !showConfirmed;
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            const headers = ["Case Number", "Party Name", "Volume", "Division", "Status", "Action", "Date", "Time"];
+            csvContent += headers.map(sanitizeCsvField).join(",") + "\r\n";
+            
+            let rowsAdded = 0;
+
+            localCases.forEach(c => {
+                const wasAddedInRange = c.addedBy === userToReport && c.createdAt && new Date(c.createdAt) >= startDate && new Date(c.createdAt) <= endDate;
+                const wasCheckedInRange = c.checkedBy === userToReport && c.checkedAt && new Date(c.checkedAt) >= startDate && new Date(c.checkedAt) <= endDate;
+                const wasConfirmedInRange = c.confirmedBy === userToReport && c.confirmedAt && new Date(c.confirmedAt) >= startDate && new Date(c.confirmedAt) <= endDate;
+
+                if (noStatusFilter || showAdded) {
+                    if (wasAddedInRange) {
+                        const added = formatBdtDateTime(c.createdAt);
+                        const rowData = [c.caseNumber, c.partyName, c.volume, c.division, c.status, "Added", added.date, added.time].map(sanitizeCsvField);
+                        csvContent += rowData.join(",") + "\r\n";
+                        rowsAdded++;
+                    }
+                }
+                if (noStatusFilter || showChecked) {
+                     if (wasCheckedInRange) {
+                        const checked = formatBdtDateTime(c.checkedAt);
+                        const rowData = [c.caseNumber, c.partyName, c.volume, c.division, c.status, "Checked", checked.date, checked.time].map(sanitizeCsvField);
+                        csvContent += rowData.join(",") + "\r\n";
+                        rowsAdded++;
+                    }
+                }
+                if (noStatusFilter || showConfirmed) {
+                    if (wasConfirmedInRange) {
+                        const confirmed = formatBdtDateTime(c.confirmedAt);
+                        const rowData = [c.caseNumber, c.partyName, c.volume, c.division, c.status, "Confirmed", confirmed.date, confirmed.time].map(sanitizeCsvField);
+                        csvContent += rowData.join(",") + "\r\n";
+                        rowsAdded++;
+                    }
+                }
+            });
+
+            if (rowsAdded === 0) {
+                displayMessage("No data to export for the selected filters.", "error");
+                return;
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${userToReport}_case_report_${fromDateStr}_to_${toDateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- Notification Functions ---
+        
+        function listenForNotifications() {
+            // Unsubscribe from previous listeners if they exist
+            if (unsubscribeFromDirectNotifications) unsubscribeFromDirectNotifications();
+            if (unsubscribeFromBroadcastNotifications) unsubscribeFromBroadcastNotifications();
+
+            let directNotifications = [];
+            let broadcastNotifications = [];
+
+            const processAndRenderNotifications = () => {
+                const allNotifications = [...directNotifications, ...broadcastNotifications];
+                // Remove duplicates based on ID
+                const uniqueNotifications = Array.from(new Map(allNotifications.map(n => [n.id, n])).values());
+                // Sort by timestamp, newest first
+                localNotifications = uniqueNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                renderNotifications(localNotifications);
+                updateUnreadCount(localNotifications);
+            };
+
+            // Listener for notifications sent directly to the user
+            const directQuery = query(notificationsCollectionRef, where("recipient", "==", currentLoggedInUser));
+            unsubscribeFromDirectNotifications = onSnapshot(directQuery, (snapshot) => {
+                directNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                processAndRenderNotifications();
+            });
+
+            // Listener for notifications sent to "all" users
+            const broadcastQuery = query(notificationsCollectionRef, where("recipient", "==", "all"));
+            unsubscribeFromBroadcastNotifications = onSnapshot(broadcastQuery, (snapshot) => {
+                broadcastNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                processAndRenderNotifications();
+            });
+        }
+
+        function renderNotifications(notifications) {
+            notificationList.innerHTML = '';
+            if (notifications.length === 0) {
+                notificationList.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400 p-4 text-center">No notifications yet.</p>`;
+                return;
+            }
+
+            const grouped = notifications.reduce((acc, notif) => {
+                const date = new Date(notif.timestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                if (!acc[date]) {
+                    acc[date] = [];
+                }
+                acc[date].push(notif);
+                return acc;
+            }, {});
+
+            const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+
+            sortedDates.forEach(date => {
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'px-3 py-1 bg-gray-100 dark:bg-gray-700/50 text-xs font-bold text-gray-600 dark:text-gray-300';
+                dateHeader.textContent = date;
+                notificationList.appendChild(dateHeader);
+
+                grouped[date].forEach(notif => {
+                    const notifDiv = document.createElement('div');
+                    const isUnread = !notif.isRead ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-white dark:bg-gray-800';
+                    notifDiv.className = `p-3 border-b border-gray-200 dark:border-gray-700 text-sm ${isUnread} hover:bg-gray-100 dark:hover:bg-gray-700`;
+                    notifDiv.innerHTML = `
+                        <p class="font-semibold text-gray-800 dark:text-gray-200">${notif.message}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">From: ${notif.sender} - ${new Date(notif.timestamp).toLocaleTimeString()}</p>
+                    `;
+                    notificationList.appendChild(notifDiv);
+                });
+            });
+        }
+
+        function updateUnreadCount(notifications) {
+            const unreadCount = notifications.filter(n => !n.isRead).length;
+            if (unreadCount > 0) {
+                notificationBadge.textContent = unreadCount;
+                notificationBadge.classList.remove('hidden');
+            } else {
+                notificationBadge.classList.add('hidden');
+            }
+        }
+
+        async function markNotificationsAsRead() {
+            const unreadNotifications = localNotifications.filter(n => !n.isRead);
+            if (unreadNotifications.length === 0) return;
+
+            const batch = writeBatch(db);
+            unreadNotifications.forEach(notif => {
+                const notifRef = doc(notificationsCollectionRef, notif.id);
+                batch.update(notifRef, { isRead: true });
+            });
+
+            try {
+                await batch.commit();
+            } catch (error) {
+                console.error("Error marking notifications as read:", error);
+            }
+        }
+
+        async function handleClearNotifications() {
+            const notificationsToDelete = localNotifications.filter(n => n.recipient === currentLoggedInUser || n.recipient === 'all');
+            if (notificationsToDelete.length === 0) return;
+
+            const batch = writeBatch(db);
+            notificationsToDelete.forEach(notif => {
+                const notifRef = doc(notificationsCollectionRef, notif.id);
+                batch.delete(notifRef);
+            });
+
+            try {
+                await batch.commit();
+                displayMessage("All notifications cleared.", "success");
+            } catch (error) {
+                console.error("Error clearing notifications:", error);
+                displayMessage("Failed to clear notifications.", "error");
+            }
+        }
+
+        function openNotificationModal(recipient = null) {
+            sendNotificationForm.reset();
+            const hiddenRecipientInput = document.getElementById('notification-recipient-hidden');
+
+            if (recipient === 'admin') { // User is notifying admin
+                adminRecipientArea.classList.add('hidden');
+                userRecipientArea.classList.remove('hidden');
+                hiddenRecipientInput.value = 'admin';
+            } else { // Admin is sending notification
+                adminRecipientArea.classList.remove('hidden');
+                userRecipientArea.classList.add('hidden');
+                hiddenRecipientInput.value = ''; // Clear hidden input
+
+                // Populate the dropdown
+                notificationRecipientSelect.innerHTML = `<option value="all">All Users</option>`;
+                Object.keys(localUsers).filter(u => u !== 'admin').forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user;
+                    option.textContent = user;
+                    notificationRecipientSelect.appendChild(option);
+                });
+            }
+            notificationModal.classList.remove('hidden');
+        }
+
+        async function handleSendNotification() {
+            const hiddenRecipient = document.getElementById('notification-recipient-hidden').value;
+            let recipient;
+
+            if (hiddenRecipient === 'admin') {
+                recipient = 'admin';
+            } else {
+                recipient = document.getElementById('notification-recipient').value;
+            }
+            
+            const message = document.getElementById('notification-message').value.trim();
+
+            if (!recipient || !message) {
+                displayMessage("Recipient and message cannot be empty.", "error");
+                return;
+            }
+
+            const newNotification = {
+                sender: currentLoggedInUser,
+                recipient: recipient,
+                message: message,
+                timestamp: new Date().toISOString(),
+                isRead: false
+            };
+
+            try {
+                await addDoc(notificationsCollectionRef, newNotification);
+                displayMessage("Notification sent successfully!", "success");
+                notificationModal.classList.add('hidden');
+            } catch (error) {
+                console.error("Error sending notification:", error);
+                displayMessage("Failed to send notification.", "error");
+            }
+        }
+
+        // --- Task Management Functions ---
+        function listenForTasks() {
+            if (unsubscribeFromTasks) unsubscribeFromTasks();
+
+            unsubscribeFromTasks = onSnapshot(tasksCollectionRef, (snapshot) => {
+                localTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (currentLoggedInUser === 'admin') {
+                    renderAllTasksForAdmin();
+                    if (adminViewingAsUser) {
+                        renderTasksForUser(adminViewingAsUser);
+                    }
+                } else {
+                    renderTasksForUser(currentLoggedInUser);
+                }
+            });
+        }
+
+        async function handleAssignTask(e) {
+            e.preventDefault();
+            const assignedTo = document.getElementById('assign-task-user').value;
+            const taskType = document.getElementById('assign-task-type').value;
+            const targetCount = parseInt(document.getElementById('assign-task-target').value, 10);
+            const startDate = document.getElementById('assign-task-start-date').value;
+            const endDate = document.getElementById('assign-task-end-date').value;
+            const initialNoteText = document.getElementById('assign-task-note').value.trim();
+
+            if (!assignedTo || !taskType || !targetCount || !startDate || !endDate) {
+                displayMessage("Please fill all required fields.", "error");
+                return;
+            }
+
+            if (new Date(endDate) < new Date(startDate)) {
+                displayMessage("End date cannot be before start date.", "error");
+                return;
+            }
+            
+            const notes = [];
+            if (initialNoteText) {
+                notes.push({
+                    text: initialNoteText,
+                    user: currentLoggedInUser,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            const newTask = {
+                assignedTo,
+                taskType,
+                targetCount,
+                startDate,
+                endDate,
+                notes,
+                assignedBy: currentLoggedInUser,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                await addDoc(tasksCollectionRef, newTask);
+                displayMessage("Task assigned successfully!", "success");
+                assignTaskForm.reset();
+            } catch (error) {
+                console.error("Error assigning task:", error);
+                displayMessage("Failed to assign task.", "error");
+            }
+        }
+        
+        async function handleDeleteTask(taskId) {
+             if (!taskId) return;
+            try {
+                await deleteDoc(doc(tasksCollectionRef, taskId));
+                displayMessage("Task deleted successfully!", "success");
+            } catch (error) {
+                console.error("Error deleting task:", error);
+                displayMessage("Failed to delete task.", "error");
+            }
+        }
+
+        function calculateTaskProgress(task) {
+            const startDate = new Date(task.startDate);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(task.endDate);
+            endDate.setHours(23, 59, 59, 999);
+            
+            let progress = 0;
+            if (task.taskType === 'upload') {
+                progress = localCases.filter(c => c.addedBy === task.assignedTo && new Date(c.createdAt) >= startDate && new Date(c.createdAt) <= endDate).length;
+            } else if (task.taskType === 'check') {
+                progress = localCases.filter(c => c.checkedBy === task.assignedTo && c.checkedAt && new Date(c.checkedAt) >= startDate && new Date(c.checkedAt) <= endDate).length;
+            } else if (task.taskType === 'confirm') {
+                progress = localCases.filter(c => c.confirmedBy === task.assignedTo && c.confirmedAt && new Date(c.confirmedAt) >= startDate && new Date(c.confirmedAt) <= endDate).length;
+            }
+            return progress;
+        }
+
+        function renderAllTasksForAdmin() {
+            assignedTasksContainer.innerHTML = '';
+            if (localTasks.length === 0) {
+                assignedTasksContainer.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400">No tasks have been assigned yet.</p>`;
+                return;
+            }
+            
+            localTasks.forEach(task => {
+                const progress = calculateTaskProgress(task);
+                const progressPercentage = (progress / task.targetCount) * 100;
+                const taskCard = document.createElement('div');
+                taskCard.className = 'p-3 bg-white dark:bg-gray-800 rounded-md border dark:border-gray-700 grid grid-cols-7 gap-4 items-center';
+                taskCard.innerHTML = `
+                    <div class="col-span-1">
+                        <p class="font-bold">${task.assignedTo}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 capitalize">${task.taskType} Cases</p>
+                    </div>
+                    <div class="col-span-3">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+                            <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">${progress} / ${task.targetCount}</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${progressPercentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="col-span-1 text-sm text-gray-600 dark:text-gray-400 text-center">
+                        <p>${task.startDate}</p>
+                        <p>to</p>
+                        <p>${task.endDate}</p>
+                    </div>
+                     <div class="col-span-1 text-center">
+                        <button data-id="${task.id}" class="view-task-notes-btn text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold">Notes</button>
+                    </div>
+                    <div class="col-span-1 text-right">
+                        <button data-id="${task.id}" class="delete-task-btn text-red-500 hover:text-red-700 font-semibold">Delete</button>
+                    </div>
+                `;
+                assignedTasksContainer.appendChild(taskCard);
+            });
+        }
+
+        function renderTasksForUser(username) {
+            const userTasks = localTasks.filter(t => t.assignedTo === username);
+            myTasksContainer.innerHTML = '';
+            if (userTasks.length === 0) {
+                myTasksContainer.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400">You have no assigned tasks.</p>`;
+                return;
+            }
+
+            userTasks.forEach(task => {
+                const progress = calculateTaskProgress(task);
+                const progressPercentage = (progress / task.targetCount) * 100;
+                const taskCard = document.createElement('div');
+                taskCard.className = 'p-4 bg-indigo-50 dark:bg-gray-700/50 rounded-lg border border-indigo-200 dark:border-gray-700';
+                taskCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-semibold text-gray-800 dark:text-gray-200">Task: ${task.targetCount} ${task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1)} Cases</h3>
+                        <div class="flex items-center space-x-4">
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Due: ${task.endDate}</p>
+                            <button data-id="${task.id}" class="view-task-notes-btn text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold">View Notes</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+                        <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">${progress} / ${task.targetCount}</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: ${progressPercentage}%"></div>
+                    </div>
+                `;
+                myTasksContainer.appendChild(taskCard);
+            });
+        }
+        
+        // --- Task Notes Functions ---
+        function openTaskNotesModal(taskId) {
+            const task = localTasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            document.getElementById('task-notes-modal-title').textContent = `Notes for ${task.assignedTo}'s Task`;
+            document.getElementById('task-note-task-id').value = taskId;
+            
+            const notesList = document.getElementById('task-notes-list');
+            notesList.innerHTML = '';
+            
+            if (!task.notes || task.notes.length === 0) {
+                notesList.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400 text-center">No notes for this task yet.</p>`;
+            } else {
+                task.notes.forEach((note, index) => {
+                    const noteEl = document.createElement('div');
+                    noteEl.className = 'text-sm p-2 rounded-md border';
+                    const classesToAdd = note.user === 'admin' ? 'bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800' : 'bg-green-50 dark:bg-green-900/20 dark:border-green-800';
+                    classesToAdd.split(' ').forEach(cls => noteEl.classList.add(cls));
+                    
+                    let editButton = '';
+                    if (note.user === currentLoggedInUser) {
+                        editButton = `<button data-task-id="${taskId}" data-note-index="${index}" class="edit-task-note-btn text-xs font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">Edit</button>`;
+                    }
+
+                    noteEl.innerHTML = `
+                        <p class="text-gray-800 dark:text-gray-200">${note.text}</p>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-semibold flex justify-between items-center">
+                            <span>${note.user} - ${new Date(note.timestamp).toLocaleString()}</span>
+                            ${editButton}
+                        </div>
+                    `;
+                    notesList.appendChild(noteEl);
+                });
+            }
+
+            taskNotesModal.classList.remove('hidden');
+        }
+
+        async function handleAddTaskNote(e) {
+            e.preventDefault();
+            const taskId = document.getElementById('task-note-task-id').value;
+            const noteText = document.getElementById('task-note-text').value.trim();
+            if (!taskId || !noteText) return;
+
+            const newNote = {
+                text: noteText,
+                user: currentLoggedInUser,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const docRef = doc(tasksCollectionRef, taskId);
+                await updateDoc(docRef, { notes: arrayUnion(newNote) });
+                displayMessage('Note added to task!', 'success');
+                addTaskNoteForm.reset();
+                // No need to close modal, just re-render notes
+                const updatedTask = localTasks.find(t => t.id === taskId);
+                if(updatedTask) openTaskNotesModal(taskId); // Re-open to refresh content
+            } catch (error) {
+                console.error("Error adding task note:", error);
+                displayMessage("Failed to add note.", "error");
+            }
+        }
+
+        function openEditTaskNoteModal(taskId, noteIndex) {
+            const task = localTasks.find(t => t.id === taskId);
+            if (!task || !task.notes[noteIndex]) return;
+
+            const noteToEdit = task.notes[noteIndex];
+            document.getElementById('edit-task-note-task-id').value = taskId;
+            document.getElementById('edit-task-note-index').value = noteIndex;
+            document.getElementById('edit-task-note-text').value = noteToEdit.text;
+            editTaskNoteModal.classList.remove('hidden');
+        }
+
+        async function handleEditTaskNote(e) {
+            e.preventDefault();
+            const taskId = document.getElementById('edit-task-note-task-id').value;
+            const noteIndex = parseInt(document.getElementById('edit-task-note-index').value, 10);
+            const newText = document.getElementById('edit-task-note-text').value.trim();
+
+            if (!taskId || isNaN(noteIndex) || !newText) return;
+
+            const taskToUpdate = localTasks.find(t => t.id === taskId);
+            if (!taskToUpdate) return;
+            
+            const updatedNotes = [...taskToUpdate.notes];
+            updatedNotes[noteIndex].text = newText;
+            
+            try {
+                const docRef = doc(tasksCollectionRef, taskId);
+                await updateDoc(docRef, { notes: updatedNotes });
+                displayMessage('Task note updated!', 'success');
+                editTaskNoteModal.classList.add('hidden');
+                openTaskNotesModal(taskId); // Refresh the main notes modal
+            } catch (error) {
+                console.error("Error updating task note:", error);
+                displayMessage("Failed to update note.", "error");
+            }
+        }
+
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', initializeAppAndLogin);
+        loginForm.addEventListener('submit', handleLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+        addCaseForm.addEventListener('submit', handleAddCase);
+        addUserForm.addEventListener('submit', handleAddUser);
+        assignCaseForm.addEventListener('submit', handleAssignCase);
+        addNoteForm.addEventListener('submit', handleAddNote);
+        editCaseForm.addEventListener('submit', handleUpdateCase);
+        editNoteForm.addEventListener('submit', handleEditNote);
+        assignTaskForm.addEventListener('submit', handleAssignTask);
+        addTaskNoteForm.addEventListener('submit', handleAddTaskNote);
+        editTaskNoteForm.addEventListener('submit', handleEditTaskNote);
+        
+        // User Dashboard Listeners
+        filterReportBtn.addEventListener('click', () => applyCombinedUserFilters(adminViewingAsUser || currentLoggedInUser));
+        downloadCsvBtn.addEventListener('click', downloadCSV);
+        clearReportFilterBtn.addEventListener('click', () => {
+            dateFromInput.value = '';
+            dateToInput.value = '';
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            applyCombinedUserFilters(adminViewingAsUser || currentLoggedInUser);
+        });
+        
+        // Modal close buttons
+        closeAssignModalBtn.addEventListener('click', () => assignModal.classList.add('hidden'));
+        cancelAssignBtn.addEventListener('click', () => assignModal.classList.add('hidden'));
+        closeNoteModalBtn.addEventListener('click', () => addNoteModal.classList.add('hidden'));
+        cancelNoteBtn.addEventListener('click', () => addNoteModal.classList.add('hidden'));
+        cancelEditBtn.addEventListener('click', () => editModal.classList.add('hidden'));
+        closeEditNoteModalBtn.addEventListener('click', () => editNoteModal.classList.add('hidden'));
+        cancelEditNoteBtn.addEventListener('click', () => editNoteModal.classList.add('hidden'));
+        closeNotificationModalBtn.addEventListener('click', () => notificationModal.classList.add('hidden'));
+        cancelNotificationBtn.addEventListener('click', () => notificationModal.classList.add('hidden'));
+        closeTaskNotesModalBtn.addEventListener('click', () => taskNotesModal.classList.add('hidden'));
+        closeEditTaskNoteModalBtn.addEventListener('click', () => editTaskNoteModal.classList.add('hidden'));
+        cancelEditTaskNoteBtn.addEventListener('click', () => editTaskNoteModal.classList.add('hidden'));
+
+
+        // Notification listeners
+        notificationBell.addEventListener('click', () => {
+            notificationPanel.classList.toggle('hidden');
+            if (!notificationPanel.classList.contains('hidden')) {
+                markNotificationsAsRead();
+            }
+        });
+        clearNotificationsBtn.addEventListener('click', handleClearNotifications);
+        sendNotificationBtn.addEventListener('click', () => openNotificationModal());
+        notifyAdminBtn.addEventListener('click', () => openNotificationModal('admin'));
+        sendNotificationSubmitBtn.addEventListener('click', handleSendNotification);
+
+        casesTableBody.addEventListener('click', (e) => {
+            const targetButton = e.target.closest('button');
+            if (!targetButton) return;
+
+            const docId = targetButton.dataset.id;
+            if (targetButton.classList.contains('delete-btn')) {
+                handleDeleteCase(docId);
+            } else if (targetButton.classList.contains('assign-btn')) {
+                openAssignModal(docId, targetButton.dataset.action);
+            } else if (targetButton.classList.contains('mark-checked-btn')) {
+                handleMarkAsChecked(docId);
+            } else if (targetButton.classList.contains('mark-confirmed-btn')) {
+                handleMarkAsConfirmed(docId);
+            } else if (targetButton.classList.contains('edit-btn')) {
+                openEditModal(docId);
+            } else if (targetButton.classList.contains('add-note-btn')) {
+                openAddNoteModal(docId);
+            } else if (targetButton.classList.contains('edit-note-btn')) {
+                const noteIndex = parseInt(targetButton.dataset.noteIndex, 10);
+                openEditNoteModal(docId, noteIndex);
+            }
+        });
+
+        // User filter button listeners
+        filterAddedBtn.addEventListener('click', () => filterAddedBtn.classList.toggle('active'));
+        filterCheckedBtn.addEventListener('click', () => filterCheckedBtn.classList.toggle('active'));
+        filterConfirmedBtn.addEventListener('click', () => filterConfirmedBtn.classList.toggle('active'));
+        filterCheckedByOthersBtn.addEventListener('click', () => filterCheckedByOthersBtn.classList.toggle('active'));
+        filterConfirmedByOthersBtn.addEventListener('click', () => filterConfirmedByOthersBtn.classList.toggle('active'));
+
+        // Admin Nav listeners
+        function setActiveAdminView(activeBtn, sectionToShow) {
+            document.querySelectorAll('.admin-nav-btn').forEach(btn => btn.classList.remove('active'));
+            activeBtn.classList.add('active');
+
+            [adminPanel, adminStatsPanel, userManagementSection, taskManagementSection, userDashboard].forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            if(sectionToShow) {
+                sectionToShow.classList.remove('hidden');
+                if (sectionToShow === adminPanel) adminStatsPanel.classList.remove('hidden');
+            }
+        }
+
+        showDashboardBtn.addEventListener('click', () => {
+            adminViewingAsUser = null;
+            setActiveAdminView(showDashboardBtn, adminPanel);
+            listenForCaseUpdates();
+        });
+        
+        toggleUserManagementBtn.addEventListener('click', () => {
+             setActiveAdminView(toggleUserManagementBtn, userManagementSection);
+        });
+
+        toggleTaskManagementBtn.addEventListener('click', () => {
+            setActiveAdminView(toggleTaskManagementBtn, taskManagementSection);
+        });
+        
+        adminChangePassBtn.addEventListener('click', async () => {
+            const newPassword = document.getElementById('admin-new-password').value;
+            if (!newPassword) {
+                displayMessage("Please enter a new password.", "error");
+                return;
+            }
+            try {
+                await setDoc(doc(usersCollectionRef, 'admin'), { password: newPassword });
+                displayMessage(`Admin password updated!`, 'success');
+                document.getElementById('admin-new-password').value = '';
+            } catch(error) {
+                displayMessage('Failed to change admin password.', 'error');
+            }
+        });
+
+        userListContainer.addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+
+            const username = target.dataset.username;
+
+            if (target.classList.contains('change-pass-btn')) {
+                handleChangePassword(username);
+            } else if (target.classList.contains('delete-user-btn')) {
+                handleDeleteUser(username);
+            } else if (target.classList.contains('view-dashboard-btn')) {
+                adminViewingAsUser = username;
+                setActiveAdminView(toggleUserManagementBtn, userDashboard);
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                listenForCaseUpdates();
+            } else if (target.classList.contains('view-pass-btn')) {
+                const passInput = document.getElementById(`pass-${username}`);
+                if (passInput.type === 'password') {
+                    passInput.type = 'text';
+                    passInput.value = localUsers[username] || '';
+                    target.textContent = 'Hide';
+                } else {
+                    passInput.type = 'password';
+                    passInput.value = '';
+                    target.textContent = 'View';
+                }
+            }
+        });
+        
+        assignedTasksContainer.addEventListener('click', (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            if (target.classList.contains('delete-task-btn')) {
+                handleDeleteTask(target.dataset.id);
+            } else if (target.classList.contains('view-task-notes-btn')) {
+                openTaskNotesModal(target.dataset.id);
+            }
+        });
+
+        myTasksContainer.addEventListener('click', (e) => {
+            const target = e.target.closest('button.view-task-notes-btn');
+            if (target) {
+                openTaskNotesModal(target.dataset.id);
+            }
+        });
+
+        document.getElementById('task-notes-list').addEventListener('click', (e) => {
+            const target = e.target.closest('button.edit-task-note-btn');
+            if (target) {
+                const taskId = target.dataset.taskId;
+                const noteIndex = parseInt(target.dataset.noteIndex, 10);
+                openEditTaskNoteModal(taskId, noteIndex);
+            }
+        });
+        
+        // Theme toggle listener
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            themeIconLight.classList.toggle('hidden');
+            themeIconDark.classList.toggle('hidden');
+        });
+
+
+        (function () {
+  if (window._casesPager) { window._casesPager.refresh(); return; }
+
+  const table = document.querySelector('table.min-w-full');
+  const tbody = document.getElementById('cases-table-body');
+  if (!table || !tbody) { console.warn('Table or tbody (cases-table-body) not found'); return; }
+
+  // --- Config ---
+  let perPage = 50;                // default rows per page
+  let siMode = 'global';           // 'global' => 1..N across all rows, 'page' => 1..50 per page
+
+  // --- State ---
+  let rows = [];
+  let page = 1;
+  let totalPages = 1;
+
+  // --- Pager UI container (inserted after the table) ---
+  const pagerEl = document.createElement('div');
+  pagerEl.id = 'cases-pager';
+  pagerEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding:8px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;';
+  table.insertAdjacentElement('afterend', pagerEl);
+
+  // Collect rows and compute pages
+  function collectRows() {
+    rows = Array.from(tbody.querySelectorAll('tr'));
+    totalPages = Math.max(1, Math.ceil(rows.length / perPage));
+  }
+
+  // Update SI cell for a visible row
+  function setSI(rowIndex, visibleIndexOnPage) {
+    const row = rows[rowIndex];
+    const firstCell = row && row.firstElementChild; // SI cell
+    if (!firstCell) return;
+    const val = (siMode === 'global') ? (rowIndex + 1) : (visibleIndexOnPage + 1);
+    firstCell.textContent = String(val);
+  }
+
+  // Render a page
+  function renderPage(n) {
+    page = Math.min(Math.max(1, n), totalPages);
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+
+    let visIdx = 0;
+    for (let i = 0; i < rows.length; i++) {
+      const show = i >= start && i < end;
+      rows[i].style.display = show ? '' : 'none';
+      if (show) setSI(i, visIdx++);
+    }
+    renderPager();
+  }
+
+  // Build the pager buttons / info
+  function renderPager() {
+    pagerEl.innerHTML = '';
+
+    const info = document.createElement('span');
+    info.textContent = `${rows.length} cases — Page ${page}/${totalPages}`;
+    info.style.marginRight = '8px';
+    pagerEl.appendChild(info);
+
+    pagerEl.appendChild(makeBtn('Prev', () => renderPage(page - 1), page <= 1));
+
+    // Numeric page buttons: 1, 2, 3, 4, ...
+    for (let p = 1; p <= totalPages; p++) {
+      pagerEl.appendChild(makeBtn(String(p), () => renderPage(p), p === page, p === page));
+    }
+
+    pagerEl.appendChild(makeBtn('Next', () => renderPage(page + 1), page >= totalPages));
+
+    // Per-page input (optional)
+    const perWrap = document.createElement('label');
+    perWrap.style.marginLeft = '10px';
+    perWrap.textContent = 'Per page: ';
+    const perInput = document.createElement('input');
+    perInput.type = 'number';
+    perInput.min = '1';
+    perInput.value = perPage;
+    perInput.style.width = '70px';
+    perInput.onchange = () => {
+      perPage = Math.max(1, parseInt(perInput.value || '50', 10));
+      collectRows();
+      renderPage(1);
+    };
+    perWrap.appendChild(perInput);
+    pagerEl.appendChild(perWrap);
+  }
+
+  function makeBtn(label, onClick, disabled = false, active = false) {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.disabled = !!disabled;
+    b.style.cssText =
+      'padding:4px 8px;border:1px solid #d1d5db;border-radius:6px;background:#ffffff;cursor:pointer;line-height:1.2;';
+    if (disabled) b.style.opacity = '0.5';
+    if (active) b.style.background = '#f3f4f6';
+    b.addEventListener('click', onClick);
+    return b;
+  }
+
+  // Public API (optional)
+  function refresh() {
+    collectRows();
+    if (page > totalPages) page = totalPages;
+    renderPage(page);
+  }
+
+  // Watch for dynamic row insertions
+  const mo = new MutationObserver(() => refresh());
+  mo.observe(tbody, { childList: true });
+
+  // Init
+  collectRows();
+  renderPage(1);
+
+  // Expose small API for console tweaks if you want
+  window._casesPager = {
+    refresh,
+    goto: (p) => renderPage(p),
+    setPerPage: (n) => { perPage = Math.max(1, +n || 50); refresh(); },
+    setSIMode: (mode) => { if (mode === 'global' || mode === 'page') { siMode = mode; refresh(); } }
+  };
+})();
+
+        
+    </script>
+</body>
+</html>
