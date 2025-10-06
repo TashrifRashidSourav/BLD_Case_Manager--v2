@@ -73,22 +73,6 @@
             background-color: #111827;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
-        /* Simple progress bar styling */
-        .progress-bar-container {
-            width: 100%;
-            background-color: #e5e7eb;
-            border-radius: 9999px;
-            overflow: hidden;
-        }
-        .dark .progress-bar-container {
-             background-color: #374151;
-        }
-        .progress-bar {
-            height: 8px;
-            background-color: #4f46e5;
-            border-radius: 9999px;
-            transition: width 0.3s ease-in-out;
-        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
@@ -360,6 +344,14 @@
                     <div>
                         <label for="filter-volume" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Volume</label>
                         <input type="text" id="filter-volume" placeholder="Search by volume" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    </div>
+                    <div>
+                        <label for="filter-division" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Division</label>
+                        <select id="filter-division" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            <option value="">All Divisions</option>
+                            <option>High Court Division</option>
+                            <option>Appellate Division</option>
+                        </select>
                     </div>
                     <div>
                         <label for="filter-user-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Added by User</label>
@@ -644,7 +636,6 @@
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setLogLevel, query, where, arrayUnion, getDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration and Initialization ---
-        // This setup uses your provided config as a fallback, but prioritizes environment variables for deployment.
         const firebaseConfig = {
           apiKey: "AIzaSyAxSJl56RmG9-Mqe4to_VwqLz_5jsnahf8",
           authDomain: "bld-case-manager.firebaseapp.com",
@@ -657,8 +648,6 @@
         const finalFirebaseConfig = typeof __firebase_config__ !== 'undefined' ? JSON.parse(__firebase_config__) : firebaseConfig;
         const initialAuthToken = typeof __initial_auth_token__ !== 'undefined' ? __initial_auth_token__ : undefined;
         const appId = finalFirebaseConfig.appId;
-
-
         let app, auth, db, userId, casesCollectionRef, usersCollectionRef, notificationsCollectionRef, tasksCollectionRef;
         let unsubscribeFromCases = null;
         let unsubscribeFromDirectNotifications = null;
@@ -670,6 +659,42 @@
         let localTasks = [];
         let currentLoggedInUser = null;
         let adminViewingAsUser = null;
+
+        // --- Date & Time Formatting Helpers ---
+        function formatFullDateTime(isoString) {
+            if (!isoString) return '';
+            try {
+                const date = new Date(isoString);
+                if (isNaN(date)) return '';
+                return date.toLocaleString('en-US', {
+                    timeZone: 'Asia/Dhaka',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function formatTimeOnly(isoString) {
+            if (!isoString) return '';
+            try {
+                const date = new Date(isoString);
+                if (isNaN(date)) return '';
+                return date.toLocaleTimeString('en-US', {
+                    timeZone: 'Asia/Dhaka',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch (e) {
+                return '';
+            }
+        }
 
         // --- UI Element References ---
         const loginPage = document.getElementById('login-page');
@@ -795,7 +820,7 @@
 
         async function initializeAppAndLogin() {
             try {
-                app = initializeApp(finalFirebaseConfig);
+                app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
                 setLogLevel('debug');
@@ -927,7 +952,7 @@
 
             if (cases.length === 0) {
                  casesTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No cases found.</td></tr>`;
-                 return;
+                return;
             }
             
             // Group cases by date for all users
@@ -1003,6 +1028,9 @@
                     if (caseData.checkedBy === activeUser || isAdminView) {
                         workflowHtml += `<button data-id="${caseData.id}" data-action="assign-confirm" class="assign-btn text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-md px-3 py-1 shadow-sm">Assign for Confirm</button>`;
                     }
+                    if (isAdminView && caseData.checkedBy) {
+                        workflowHtml += `<button data-id="${caseData.id}" class="uncheck-btn text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-md px-3 py-1 shadow-sm mt-1">Uncheck</button>`;
+                    }
                     break;
                 case 'Pending Confirmation':
                     if (caseData.assignedForConfirm === activeUser) {
@@ -1011,6 +1039,17 @@
                     if (caseData.checkedBy === activeUser || isAdminView) {
                          workflowHtml += `<button data-id="${caseData.id}" data-action="assign-confirm" class="assign-btn text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-md px-3 py-1 shadow-sm mt-1">Re-assign Confirm</button>`;
                     }
+                    if (isAdminView && caseData.checkedBy) {
+                        workflowHtml += `<button data-id="${caseData.id}" class="uncheck-btn text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-md px-3 py-1 shadow-sm mt-1">Uncheck</button>`;
+                    }
+                    break;
+                case 'Confirmed':
+                    if (isAdminView && caseData.confirmedBy) {
+                         workflowHtml += `<button data-id="${caseData.id}" class="unconfirm-btn text-xs font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-md px-3 py-1 shadow-sm">Unconfirm</button>`;
+                    }
+                     if (isAdminView && caseData.checkedBy) {
+                        workflowHtml += `<button data-id="${caseData.id}" class="uncheck-btn text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-md px-3 py-1 shadow-sm mt-1">Uncheck</button>`;
+                    }
                     break;
             }
             
@@ -1018,25 +1057,28 @@
             
             if (caseData.addedBy === activeUser || isAdminView) {
                  workflowHtml += `<div class="flex space-x-2 pt-2">
-                                     <button data-id="${caseData.id}" class="edit-btn text-xs font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Edit</button>
-                                     <button data-id="${caseData.id}" class="delete-btn text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400">Delete</button>
-                                  </div>`;
+                                    <button data-id="${caseData.id}" class="edit-btn text-xs font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Edit</button>
+                                    <button data-id="${caseData.id}" class="delete-btn text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400">Delete</button>
+                                 </div>`;
             }
             workflowHtml += `</div>`;
 
             let notesHtml = '<div class="space-y-2">';
             if (caseData.notes && caseData.notes.length > 0) {
                 caseData.notes.forEach((note, index) => {
-                    let editButtonHtml = '';
+                    let noteActionsHtml = '';
                     if (note.user === activeUser || isAdminView) {
-                        editButtonHtml = `<button data-id="${caseData.id}" data-note-index="${index}" class="edit-note-btn text-xs font-medium text-indigo-600 hover:text-indigo-800 ml-2">Edit</button>`;
+                        noteActionsHtml = `
+                            <button data-id="${caseData.id}" data-note-index="${index}" class="edit-note-btn text-xs font-medium text-indigo-600 hover:text-indigo-800 ml-2">Edit</button>
+                            <button data-id="${caseData.id}" data-note-index="${index}" class="delete-note-btn text-xs font-medium text-red-600 hover:text-red-800 ml-2">Delete</button>
+                        `;
                     }
                     notesHtml += `
                         <div class="text-xs p-2 bg-gray-50 dark:bg-gray-700/50 rounded border border-gray-200 dark:border-gray-700">
                             <p class="text-gray-800 dark:text-gray-200">${note.text}</p>
                             <div class="text-gray-500 dark:text-gray-400 mt-1 font-semibold flex justify-between items-center">
-                                <span>${note.user} - <span class="font-normal">${new Date(note.timestamp).toLocaleString()}</span></span>
-                                ${editButtonHtml}
+                                <span>${note.user} - <span class="font-normal">${formatFullDateTime(note.timestamp)}</span></span>
+                                <div>${noteActionsHtml}</div>
                             </div>
                         </div>
                     `;
@@ -1049,25 +1091,25 @@
             let auditTrailHtml = `
                 <div class="flex items-center">
                     <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <div><strong>Added by:</strong> ${caseData.addedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${new Date(caseData.createdAt).toLocaleString() || ''}</div></div>
+                    <div><strong>Added by:</strong> ${caseData.addedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${formatFullDateTime(caseData.createdAt) || ''}</div></div>
                 </div>
                 <div class="flex items-center">
                     <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <div><strong>Checked by:</strong> ${caseData.checkedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${caseData.checkedAt ? new Date(caseData.checkedAt).toLocaleString() : ''}</div></div>
+                    <div><strong>Checked by:</strong> ${caseData.checkedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${caseData.checkedAt ? formatFullDateTime(caseData.checkedAt) : ''}</div></div>
                 </div>
                 <div class="flex items-center">
                     <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
-                    <div><strong>Confirmed by:</strong> ${caseData.confirmedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${caseData.confirmedAt ? new Date(caseData.confirmedAt).toLocaleString() : ''}</div></div>
+                    <div><strong>Confirmed by:</strong> ${caseData.confirmedBy || 'N/A'}<div class="text-gray-500 dark:text-gray-400">${caseData.confirmedAt ? formatFullDateTime(caseData.confirmedAt) : ''}</div></div>
                 </div>
             `;
 
             if (caseData.auditLog && caseData.auditLog.length > 0) {
                 caseData.auditLog.forEach(log => {
                     auditTrailHtml += `
-                       <div class="flex items-center mt-2 border-t pt-2 border-gray-200 dark:border-gray-700">
-                           <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                           <div><strong>${log.action}</strong><div class="text-gray-500 dark:text-gray-400">${new Date(log.timestamp).toLocaleString()}</div></div>
-                       </div>
+                     <div class="flex items-center mt-2 border-t pt-2 border-gray-200 dark:border-gray-700">
+                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div><strong>${log.action}</strong><div class="text-gray-500 dark:text-gray-400">${formatFullDateTime(log.timestamp)}</div></div>
+                    </div>
                     `;
                 });
             }
@@ -1096,7 +1138,6 @@
             unsubscribeFromCases = onSnapshot(casesQuery, (snapshot) => {
                 localCases = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                // This will trigger a re-render of tasks with updated progress
                 if (currentLoggedInUser === 'admin') {
                     renderAllTasksForAdmin();
                     if (adminViewingAsUser) {
@@ -1262,6 +1303,53 @@
                 displayMessage("Operation failed.", "error");
             }
         }
+        
+        async function handleUncheckCase(docId) {
+            const auditLogEntry = {
+                action: `Unchecked by admin`,
+                timestamp: new Date().toISOString()
+            };
+            const updateData = {
+                status: 'Uploaded',
+                checkedBy: '',
+                checkedAt: '',
+                assignedForCheck: '',
+                assignedForConfirm: '',
+                confirmedBy: '',
+                confirmedAt: '',
+                auditLog: arrayUnion(auditLogEntry)
+            };
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await updateDoc(docRef, updateData);
+                displayMessage('Case has been unchecked!', 'success');
+            } catch(error) {
+                console.error("Error unchecking case:", error);
+                displayMessage("Operation failed.", "error");
+            }
+        }
+        
+        async function handleUnconfirmCase(docId) {
+            const auditLogEntry = {
+                action: `Unconfirmed by admin`,
+                timestamp: new Date().toISOString()
+            };
+            const updateData = {
+                status: 'Checked', // Go back to checked state
+                confirmedBy: '',
+                confirmedAt: '',
+                assignedForConfirm: '',
+                auditLog: arrayUnion(auditLogEntry)
+            };
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await updateDoc(docRef, updateData);
+                displayMessage('Case has been unconfirmed!', 'success');
+            } catch(error) {
+                console.error("Error unconfirming case:", error);
+                displayMessage("Operation failed.", "error");
+            }
+        }
 
         async function handleDeleteCase(docId) {
             if (!docId) return;
@@ -1355,6 +1443,24 @@
             }
         }
 
+        async function handleDeleteNote(docId, noteIndex) {
+            if (!docId || isNaN(noteIndex)) return;
+
+            const caseToUpdate = localCases.find(c => c.id === docId);
+            if (!caseToUpdate) return;
+
+            const updatedNotes = caseToUpdate.notes.filter((_, index) => index !== noteIndex);
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/cases`, docId);
+                await updateDoc(docRef, { notes: updatedNotes });
+                displayMessage('Note deleted successfully!', 'success');
+            } catch (error) {
+                console.error("Error deleting note:", error);
+                displayMessage("Failed to delete note.", "error");
+            }
+        }
+
         async function handleUpdateCase(e) {
             e.preventDefault();
             const docId = document.getElementById('edit-doc-id').value;
@@ -1389,7 +1495,12 @@
 
             const volume = document.getElementById('filter-volume').value.toLowerCase();
             if (volume) {
-                filteredCases = filteredCases.filter(c => c.volume && c.volume.toLowerCase().includes(volume));
+                filteredCases = filteredCases.filter(c => c.volume && c.volume.toLowerCase() === volume);
+            }
+
+            const division = document.getElementById('filter-division').value;
+            if (division) {
+                filteredCases = filteredCases.filter(c => c.division === division);
             }
 
             const addedBy = document.getElementById('filter-user-name').value;
@@ -1453,7 +1564,7 @@
             try {
                 const dateObj = new Date(isoString);
                 const date = dateObj.toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' }); // YYYY-MM-DD format
-                const time = dateObj.toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: true }); // HH:MM:SS AM/PM format
+                const time = dateObj.toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: 'numeric', minute: '2-digit', hour12: true }); // HH:MM AM/PM format
                 return { date, time };
             } catch (e) {
                 return { date: "", time: "" }; // Return empty if the date string is invalid
@@ -1878,7 +1989,7 @@
                     notifDiv.className = `p-3 border-b border-gray-200 dark:border-gray-700 text-sm ${isUnread} hover:bg-gray-100 dark:hover:bg-gray-700`;
                     notifDiv.innerHTML = `
                         <p class="font-semibold text-gray-800 dark:text-gray-200">${notif.message}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">From: ${notif.sender} - ${new Date(notif.timestamp).toLocaleTimeString()}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">From: ${notif.sender} - ${formatTimeOnly(notif.timestamp)}</p>
                     `;
                     notificationList.appendChild(notifDiv);
                 });
@@ -2188,7 +2299,7 @@
                     noteEl.innerHTML = `
                         <p class="text-gray-800 dark:text-gray-200">${note.text}</p>
                         <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 font-semibold flex justify-between items-center">
-                            <span>${note.user} - ${new Date(note.timestamp).toLocaleString()}</span>
+                            <span>${note.user} - ${formatFullDateTime(note.timestamp)}</span>
                             ${editButton}
                         </div>
                     `;
@@ -2327,6 +2438,10 @@
                 handleMarkAsChecked(docId);
             } else if (targetButton.classList.contains('mark-confirmed-btn')) {
                 handleMarkAsConfirmed(docId);
+            } else if (targetButton.classList.contains('uncheck-btn')) {
+                handleUncheckCase(docId);
+            } else if (targetButton.classList.contains('unconfirm-btn')) {
+                handleUnconfirmCase(docId);
             } else if (targetButton.classList.contains('edit-btn')) {
                 openEditModal(docId);
             } else if (targetButton.classList.contains('add-note-btn')) {
@@ -2334,6 +2449,9 @@
             } else if (targetButton.classList.contains('edit-note-btn')) {
                 const noteIndex = parseInt(targetButton.dataset.noteIndex, 10);
                 openEditNoteModal(docId, noteIndex);
+            } else if (targetButton.classList.contains('delete-note-btn')) {
+                const noteIndex = parseInt(targetButton.dataset.noteIndex, 10);
+                handleDeleteNote(docId, noteIndex);
             }
         });
 
@@ -2450,310 +2568,10 @@
             themeIconDark.classList.toggle('hidden');
         });
 
-        (function () {
-  if (window._casesPager2) { window._casesPager2.refresh(); return; }
-
-  const table = document.querySelector('table.min-w-full');
-  const tbody = document.getElementById('cases-table-body');
-  if (!table || !tbody) { console.warn('Table or tbody (cases-table-body) not found'); return; }
-
-  // ---------- Config ----------
-  let perPage = 50;          // default
-  let siMode = 'global';     // 'global' (1..N) or 'page' (1..perPage)
-  const maxPageButtons = 7;  // max numbered buttons visible (with ellipses)
-
-  // ---------- State ----------
-  let rows = [];
-  let page = 1;
-  let totalPages = 1;
-
-  // ---------- Helpers ----------
-  const clamp = (n, lo, hi) => Math.min(Math.max(n, lo), hi);
-  const pageList = (current, total, maxBtns = 7) => {
-    // Build array like: [1, '…', 4, 5, 6, '…', 20]
-    if (total <= maxBtns) return Array.from({length: total}, (_,i)=>i+1);
-    const side = Math.max(1, Math.floor((maxBtns - 3) / 2));
-    const left = Math.max(2, current - side);
-    const right = Math.min(total - 1, current + side);
-    const list = [1];
-    if (left > 2) list.push('…');
-    for (let i = left; i <= right; i++) list.push(i);
-    if (right < total - 1) list.push('…');
-    list.push(total);
-    return list;
-  };
-
-  function collectRows() {
-    rows = Array.from(tbody.querySelectorAll('tr'));
-    totalPages = Math.max(1, Math.ceil(rows.length / perPage));
-  }
-
-  function setSI(rowIndex, visibleIndexOnPage) {
-    const row = rows[rowIndex];
-    if (!row) return;
-    const firstCell = row.firstElementChild;
-    if (!firstCell) return;
-    const val = siMode === 'global' ? (rowIndex + 1) : (visibleIndexOnPage + 1);
-    firstCell.textContent = String(val);
-  }
-
-  function renderPage(n) {
-    page = clamp(n, 1, totalPages);
-    const start = (page - 1) * perPage;
-    const end = start + perPage;
-
-    let visIdx = 0;
-    for (let i = 0; i < rows.length; i++) {
-      const show = i >= start && i < end;
-      rows[i].style.display = show ? '' : 'none';
-      if (show) setSI(i, visIdx++);
-    }
-    updateBar();
-  }
-
-  // ---------- UI (Tailwind + fallback) ----------
-  const nav = document.createElement('nav');
-  nav.setAttribute('aria-label', 'Cases pagination');
-  nav.id = 'cases-pager';
-  nav.className = [
-    // position
-    'fixed','bottom-4','left-1/2','-translate-x-1/2','z-[9999]',
-    'max-w-[95vw]',
-  ].join(' ');
-
-  // container
-  const wrap = document.createElement('div');
-  wrap.className = [
-    'flex','items-center','gap-2','px-3','py-2','rounded-2xl',
-    'backdrop-blur','shadow-xl','ring-1','ring-black/5',
-    'bg-white/80','text-gray-900',
-    'dark:bg-gray-900/80','dark:text-gray-100'
-  ].join(' ');
-  nav.appendChild(wrap);
-
-  // prev
-  const btnPrev = buttonIcon('Prev', chevronLeft());
-  // pages container
-  const pagesBox = document.createElement('div');
-  pagesBox.className = 'flex items-center gap-1';
-  // next
-  const btnNext = buttonIcon('Next', chevronRight());
-
-  // range label
-  const range = document.createElement('div');
-  range.className = 'hidden md:block text-sm text-gray-600 dark:text-gray-300 ml-2';
-
-  // per page
-  const perWrap = document.createElement('label');
-  perWrap.className = 'flex items-center gap-1 ml-2 text-sm';
-  perWrap.innerHTML = '<span class="text-gray-600 dark:text-gray-300">Rows</span>';
-  const perSel = document.createElement('select');
-  perSel.className = 'h-8 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 px-2';
-  [25,50,100,200].forEach(n=>{
-    const o=document.createElement('option'); o.value=n; o.textContent=n; if(n===perPage)o.selected=true;
-    perSel.appendChild(o);
-  });
-  perWrap.appendChild(perSel);
-
-  // SI mode toggle
-  const siBtn = document.createElement('button');
-  siBtn.type = 'button';
-  siBtn.className = 'h-8 px-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 text-sm';
-  siBtn.title = 'Toggle SI numbering mode';
-  setSIModeLabel();
-
-  // jump to page
-  const jumpWrap = document.createElement('div');
-  jumpWrap.className = 'flex items-center gap-1 ml-2 text-sm';
-  const jumpIn = document.createElement('input');
-  jumpIn.type = 'number';
-  jumpIn.min = '1';
-  jumpIn.className = 'h-8 w-20 rounded-xl border border-gray-300 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 px-2';
-  jumpIn.placeholder = 'Go…';
-  const jumpBtn = pillButton('Go');
-
-  // close
-  const closeBtn = pillButton('✕');
-  closeBtn.title = 'Hide paginator';
-
-  // Assemble
-  wrap.appendChild(btnPrev);
-  wrap.appendChild(pagesBox);
-  wrap.appendChild(btnNext);
-  wrap.appendChild(range);
-  wrap.appendChild(perWrap);
-  wrap.appendChild(siBtn);
-  jumpWrap.appendChild(jumpIn);
-  jumpWrap.appendChild(jumpBtn);
-  wrap.appendChild(jumpWrap);
-  wrap.appendChild(closeBtn);
-
-  // Add to DOM
-  table.insertAdjacentElement('afterend', nav);
-
-  // Tiny fallback styles if Tailwind is not present
-  if (!document.documentElement.classList.contains('dark') && !hasTailwind()) {
-    nav.style.position = 'fixed';
-    nav.style.bottom = '16px';
-    nav.style.left = '50%';
-    nav.style.transform = 'translateX(-50%)';
-    nav.style.zIndex = 9999;
-    wrap.style.background = 'rgba(255,255,255,.9)';
-    wrap.style.border = '1px solid #e5e7eb';
-    wrap.style.borderRadius = '16px';
-    wrap.style.padding = '8px 12px';
-    wrap.style.boxShadow = '0 10px 30px rgba(0,0,0,.15)';
-    wrap.style.color = '#111';
-  }
-
-  // ---------- Events ----------
-  btnPrev.addEventListener('click', () => renderPage(page - 1));
-  btnNext.addEventListener('click', () => renderPage(page + 1));
-  perSel.addEventListener('change', () => {
-    perPage = Math.max(1, parseInt(perSel.value, 10) || 50);
-    collectRows();
-    renderPage(1);
-  });
-  siBtn.addEventListener('click', () => {
-    siMode = siMode === 'global' ? 'page' : 'global';
-    setSIModeLabel();
-    renderPage(page);
-  });
-  jumpBtn.addEventListener('click', () => {
-    const p = parseInt(jumpIn.value, 10);
-    if (!isNaN(p)) renderPage(p);
-  });
-  jumpIn.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const p = parseInt(jumpIn.value, 10);
-      if (!isNaN(p)) renderPage(p);
-    }
-  });
-  closeBtn.addEventListener('click', () => {
-    nav.style.display = 'none';
-  });
-
-  // Keyboard: ← → to navigate
-  window.addEventListener('keydown', (e) => {
-    if (['INPUT','TEXTAREA','SELECT'].includes((e.target.tagName||'').toUpperCase())) return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); renderPage(page-1); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); renderPage(page+1); }
-  }, true);
-
-  // Watch dynamic changes
-  const mo = new MutationObserver(() => refresh());
-  mo.observe(tbody, { childList: true });
-
-  // ---------- Render ----------
-  function updateBar() {
-    // Prev/Next state
-    setDisabled(btnPrev, page <= 1);
-    setDisabled(btnNext, page >= totalPages);
-
-    // Range text
-    const start = rows.length ? (page - 1) * perPage + 1 : 0;
-    const end = Math.min(rows.length, page * perPage);
-    range.textContent = `Showing ${start}–${end} of ${rows.length}`;
-
-    // Page buttons
-    pagesBox.innerHTML = '';
-    for (const item of pageList(page, totalPages, maxPageButtons)) {
-      if (item === '…') {
-        const ell = document.createElement('span');
-        ell.textContent = '…';
-        ell.className = 'px-2 text-gray-500';
-        pagesBox.appendChild(ell);
-      } else {
-        const b = pillButton(String(item));
-        if (item === page) {
-          b.classList.add('bg-gray-900','text-white','dark:bg-gray-100','dark:text-gray-900');
-        }
-        b.addEventListener('click', () => renderPage(item));
-        pagesBox.appendChild(b);
-      }
-    }
-
-    // Jump input bounds
-    jumpIn.max = String(totalPages);
-  }
-
-  function refresh() {
-    const prevTotal = rows.length;
-    collectRows();
-    if (prevTotal !== rows.length) page = clamp(page, 1, totalPages);
-    renderPage(page);
-  }
-
-  function setSIModeLabel() {
-    siBtn.textContent = `SI: ${siMode === 'global' ? 'Global' : 'Page'}`;
-  }
-
-  // ---------- Init ----------
-  collectRows();
-  renderPage(1);
-
-  // Expose API
-  window._casesPager2 = {
-    refresh,
-    goto: (p) => renderPage(p),
-    setPerPage: (n) => { perPage = Math.max(1, +n || 50); refresh(); },
-    setSIMode: (mode) => { if (mode==='global'||mode==='page'){ siMode=mode; setSIModeLabel(); refresh(); } },
-  };
-
-  // ---------- UI builders ----------
-  function pillButton(text) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = text;
-    b.className = [
-      'h-8','px-3','rounded-xl','border','text-sm',
-      'border-gray-300','dark:border-gray-700',
-      'bg-white/70','dark:bg-gray-800/70',
-      'hover:bg-gray-100','dark:hover:bg-gray-800',
-      'transition','disabled:opacity-50'
-    ].join(' ');
-    return b;
-  }
-
-  function buttonIcon(aria, svg) {
-    const b = pillButton('');
-    b.setAttribute('aria-label', aria);
-    b.innerHTML = svg;
-    b.style.display = 'inline-flex';
-    b.style.alignItems = 'center';
-    b.style.justifyContent = 'center';
-    b.style.gap = '6px';
-    return b;
-  }
-
-  function setDisabled(btn, disabled) {
-    btn.disabled = !!disabled;
-  }
-
-  function chevronLeft() {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-      viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd"
-      d="M10.354 1.646a.5.5 0 0 1 0 .708L5.707 7l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0"/></svg>`;
-  }
-  function chevronRight() {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-      viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd"
-      d="M5.646 1.646a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L10.293 7 5.646 2.354a.5.5 0 0 1 0-.708"/></svg>`;
-  }
-
-  function hasTailwind() {
-    // very lightweight heuristic: check a class applied with Tailwind utilities
-    const probe = document.createElement('div');
-    probe.className = 'hidden';
-    document.body.appendChild(probe);
-    const isHidden = window.getComputedStyle(probe).display === 'none';
-    probe.remove();
-    return isHidden;
-  }
-})();
-
-
-        
     </script>
 </body>
 </html>
+
+
+
+
