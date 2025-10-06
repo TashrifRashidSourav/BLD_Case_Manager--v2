@@ -1522,25 +1522,30 @@
             let confirmedByOthersCount = 0;
             
             const casesToDisplay = [];
-            const userCases = localCases.filter(c => c.involvedUsers.includes(username));
+            const allCasesInDateRange = localCases.filter(c => {
+                if (!c.createdAt) return false;
+                const caseDate = new Date(c.createdAt);
+                return caseDate >= startDate && caseDate <= endDate;
+            });
+            const userCases = allCasesInDateRange.filter(c => c.involvedUsers.includes(username));
 
             userCases.forEach(c => {
                 let displayThisCase = false;
                 
                 // My actions in range
-                const wasAddedInRange = c.addedBy === username && c.createdAt && new Date(c.createdAt) >= startDate && new Date(c.createdAt) <= endDate;
-                const wasCheckedInRange = c.checkedBy === username && c.checkedAt && new Date(c.checkedAt) >= startDate && new Date(c.checkedAt) <= endDate;
-                const wasConfirmedInRange = c.confirmedBy === username && c.confirmedAt && new Date(c.confirmedAt) >= startDate && new Date(c.confirmedAt) <= endDate;
-                const wasUncheckedInRange = c.addedBy === username && !c.checkedBy && c.createdAt && new Date(c.createdAt) >= startDate && new Date(c.createdAt) <= endDate;
+                const wasAddedInRange = c.addedBy === username;
+                const wasCheckedInRange = c.checkedBy === username;
+                const wasConfirmedInRange = c.confirmedBy === username;
+                const wasUncheckedInRange = c.status === 'Uploaded' || (c.status === 'Pending Check' && c.assignedForCheck === username);
 
                 // Actions by others on my cases in range
-                const wasCheckedByOthersInRange = c.addedBy === username && c.checkedBy && c.checkedBy !== username && c.checkedAt && new Date(c.checkedAt) >= startDate && new Date(c.checkedAt) <= endDate;
-                const wasConfirmedByOthersInRange = c.addedBy === username && c.confirmedBy && c.confirmedBy !== username && c.confirmedAt && new Date(c.confirmedAt) >= startDate && new Date(c.confirmedAt) <= endDate;
+                const wasCheckedByOthersInRange = c.addedBy === username && c.checkedBy && c.checkedBy !== username;
+                const wasConfirmedByOthersInRange = c.addedBy === username && c.confirmedBy && c.confirmedBy !== username;
 
                 if(wasAddedInRange) addedCount++;
                 if(wasCheckedInRange) checkedCount++;
                 if(wasConfirmedInRange) confirmedCount++;
-                if(wasUncheckedInRange) uncheckedCount++;
+                if(c.status === 'Uploaded' || c.status === 'Pending Check') uncheckedCount++;
                 if(wasCheckedByOthersInRange) checkedByOthersCount++;
                 if(wasConfirmedByOthersInRange) confirmedByOthersCount++;
 
