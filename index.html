@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" class=""> <head>
+<html lang="en" class=""> <!-- Class for theme toggle -->
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Case Management System</title>
@@ -49,13 +50,13 @@
             border-bottom: 1px solid #e5e7eb;
         }
         .dark #cases-table-body tr.case-row {
-            border-bottom: 1px solid #374151;
+             border-bottom: 1px solid #374151;
         }
         #cases-table-body tr.date-header-row td {
             border-bottom: 2px solid #d1d5db;
         }
         .dark #cases-table-body tr.date-header-row td {
-            border-bottom: 2px solid #4b5563;
+             border-bottom: 2px solid #4b5563;
         }
         /* Notification Badge */
         .notification-badge {
@@ -80,7 +81,7 @@
             overflow: hidden;
         }
         .dark .progress-bar-container {
-            background-color: #374151;
+             background-color: #374151;
         }
         .progress-bar {
             height: 8px;
@@ -92,6 +93,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
 
+    <!-- Login Page -->
     <div id="login-page" class="flex items-center justify-center min-h-screen login-bg">
         <div class="w-full max-w-md p-8 space-y-6 bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20">
             <div class="flex flex-col items-center">
@@ -100,13 +102,14 @@
                 </h2>
             </div>
             <form id="login-form" class="space-y-6">
-                <div>
+                 <div>
                     <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
                     <div class="mt-1">
                         <select id="username" name="username" required
                             class="block w-full px-3 py-2 bg-gray-700/50 border border-gray-500 text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             <option value="" disabled selected>Select your name</option>
-                            </select>
+                            <!-- User options will be dynamically populated here -->
+                        </select>
                     </div>
                 </div>
 
@@ -130,6 +133,7 @@
         </div>
     </div>
 
+    <!-- Main Application Page (Initially Hidden) -->
     <div id="app-page" class="hidden">
         <div class="px-4 sm:px-6 lg:px-8">
             <header class="mb-8 flex justify-between items-center pt-8">
@@ -149,10 +153,12 @@
                                 <button id="clear-notifications-btn" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Clear All</button>
                             </div>
                             <div id="notification-list" class="max-h-96 overflow-y-auto">
-                                </div>
+                                <!-- Notifications will be injected here -->
+                            </div>
                         </div>
                     </div>
-                     <button id="theme-toggle" class="p-2 rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 focus:outline-none">
+                     <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="p-2 rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 focus:outline-none">
                         <svg id="theme-icon-light" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                         <svg id="theme-icon-dark" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                     </button>
@@ -163,20 +169,25 @@
                 </div>
             </header>
 
+            <!-- Admin Navigation Bar -->
             <div id="admin-nav" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-8 p-3 border dark:border-gray-700 flex-wrap space-x-2">
-                <button id="show-dashboard-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700 active">Dashboard</button>
-                <button id="toggle-user-management-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Manage Users</button>
-                <button id="toggle-task-management-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Task Management</button>
-                <button id="send-notification-btn" class="font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Send Notification</button>
+                 <button id="show-dashboard-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700 active">Dashboard</button>
+                 <button id="toggle-user-management-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Manage Users</button>
+                 <button id="toggle-task-management-btn" class="admin-nav-btn font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Task Management</button>
+                 <button id="send-notification-btn" class="font-semibold text-indigo-700 hover:text-indigo-900 px-3 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Send Notification</button>
             </div>
-             <div id="user-nav" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-8 p-3 border dark:border-gray-700">
-                <button id="notify-admin-btn" class="font-semibold text-indigo-700 hover:text-indigo-900 px-4 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Notify Admin</button>
+             <!-- User Action Bar -->
+            <div id="user-nav" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-8 p-3 border dark:border-gray-700">
+                 <button id="notify-admin-btn" class="font-semibold text-indigo-700 hover:text-indigo-900 px-4 py-2 rounded-md hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-700">Notify Admin</button>
             </div>
             
+            <!-- User Dashboard Panel -->
             <div id="user-dashboard" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
+                <!-- User Tasks Panel -->
                 <div id="user-tasks-panel" class="mb-8 border-b dark:border-gray-700 pb-6">
                     <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">My Assigned Tasks</h2>
                     <div id="my-tasks-container" class="space-y-4">
+                        <!-- User's assigned tasks will be rendered here -->
                         <p class="text-center text-gray-500 dark:text-gray-400">You have no assigned tasks.</p>
                     </div>
                 </div>
@@ -197,11 +208,11 @@
                         <button id="download-csv-btn" class="w-full py-2 px-4 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700">Download CSV</button>
                     </div>
                 </div>
-                    <div class="border-t dark:border-gray-700 mt-6 pt-4">
+                 <!-- Section for case list filters -->
+                <div class="border-t dark:border-gray-700 mt-6 pt-4">
                     <div class="flex items-center space-x-2 flex-wrap">
                         <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mr-2 mb-2">Show cases:</h3>
                         <button id="filter-added-by-me" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Add By Me</button>
-                        <button id="filter-unchecked" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Unchecked</button>
                         <button id="filter-checked-by-me" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Check By Me</button>
                         <button id="filter-confirmed-by-me" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Confirm By Me</button>
                         <button id="filter-checked-by-others" class="filter-btn py-2 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500 mb-2">Checked</button>
@@ -232,6 +243,7 @@
                 </div>
             </div>
 
+            <!-- Admin Statistics Panel -->
             <div id="admin-stats-panel" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Statistics (Based on Filters)</h2>
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-center">
@@ -258,6 +270,7 @@
                 </div>
             </div>
             
+            <!-- User Management Panel (Initially Hidden) -->
             <div id="user-management-section" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">User Management</h2>
                 <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 mb-6">
@@ -270,7 +283,8 @@
                 <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 mb-6">
                     <h3 class="font-semibold mb-2">Existing Users</h3>
                     <div id="user-list-container" class="space-y-3">
-                        </div>
+                        <!-- User list will be rendered here -->
+                    </div>
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700">
                     <h3 class="font-semibold mb-2">Add New User</h3>
@@ -282,6 +296,7 @@
                 </div>
             </div>
 
+            <!-- Task Management Panel (Initially Hidden) -->
             <div id="task-management-section" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 border dark:border-gray-700">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Task Management</h2>
                 <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700 mb-6">
@@ -291,7 +306,7 @@
                             <label for="assign-task-user" class="block text-sm font-medium text-gray-700 dark:text-gray-300">User</label>
                             <select id="assign-task-user" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"></select>
                         </div>
-                       <div class="md:col-span-1">
+                         <div class="md:col-span-1">
                             <label for="assign-task-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Task Type</label>
                             <select id="assign-task-type" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                 <option value="upload">Upload Cases</option>
@@ -325,10 +340,12 @@
                 <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border dark:border-gray-700">
                     <h3 class="font-semibold mb-2">Current Tasks</h3>
                     <div id="assigned-tasks-container" class="space-y-3">
-                        </div>
+                        <!-- All assigned tasks will be rendered here -->
+                    </div>
                 </div>
             </div>
             
+            <!-- Admin Filter Panel (Initially Hidden) -->
             <div id="admin-panel" class="hidden bg-indigo-50 dark:bg-gray-800/50 p-6 rounded-lg shadow-md mb-8 border border-indigo-200 dark:border-gray-700">
                 <h2 class="text-xl font-semibold mb-4 text-indigo-800 dark:text-indigo-300">Admin Panel: Filters</h2>
                 <div id="filter-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
@@ -336,21 +353,13 @@
                         <label for="filter-case-no" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Case Number</label>
                         <input type="text" id="filter-case-no" placeholder="Search by case number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     </div>
-                    <div>
+                     <div>
                         <label for="filter-party-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Party Name</label>
                         <input type="text" id="filter-party-name" placeholder="Search by party name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     </div>
                     <div>
                         <label for="filter-volume" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Volume</label>
                         <input type="text" id="filter-volume" placeholder="Search by volume" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                    </div>
-                    <div>
-                        <label for="filter-division" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Division</label>
-                        <select id="filter-division" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                            <option value="">All Divisions</option>
-                            <option>High Court Division</option>
-                            <option>Appellate Division</option>
-                        </select>
                     </div>
                     <div>
                         <label for="filter-user-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Added by User</label>
@@ -386,6 +395,7 @@
                 </div>
             </div>
 
+            <!-- Form to Add New Case -->
             <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                 <h2 class="text-xl font-semibold mb-4 dark:text-white">Add a New Case</h2>
                 <form id="add-case-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -393,7 +403,7 @@
                         <label for="caseNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Case Number</label>
                         <input type="text" id="caseNumber" name="caseNumber" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     </div>
-                    <div>
+                     <div>
                         <label for="partyName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Party Name</label>
                         <input type="text" id="partyName" name="partyName" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     </div>
@@ -420,6 +430,7 @@
                 </form>
             </div>
 
+            <!-- Table of Cases -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-x-auto">
                 <table class="min-w-full">
                     <thead class="bg-gray-50 dark:bg-gray-700">
@@ -432,27 +443,32 @@
                         </tr>
                     </thead>
                     <tbody id="cases-table-body" class="bg-white dark:bg-gray-800">
-                        </tbody>
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
     
+    <!-- Send Notification Modal -->
     <div id="notification-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold dark:text-white">Send Notification</h2>
-                <button id="close-notification-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+                 <button id="close-notification-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
             </div>
             <form id="send-notification-form">
                 <input type="hidden" id="notification-recipient-hidden">
+                <!-- Admin's view: Dropdown -->
                 <div id="admin-recipient-area">
                     <label for="notification-recipient" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To:</label>
                     <select id="notification-recipient" name="notification-recipient" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        </select>
+                        <!-- Recipient options will be populated here -->
+                    </select>
                 </div>
+                <!-- User's view: Static text -->
                 <div id="user-recipient-area" class="hidden">
-                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300">To: <span class="font-bold">Admin</span></p>
+                     <p class="text-sm font-medium text-gray-700 dark:text-gray-300">To: <span class="font-bold">Admin</span></p>
                 </div>
                 <div class="mt-4">
                     <label for="notification-message" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
@@ -470,11 +486,12 @@
         </div>
     </div>
 
+    <!-- Assign Modal -->
     <div id="assign-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="assign-modal-title" class="text-xl font-semibold dark:text-white">Assign Case</h2>
-                <button id="close-assign-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+                 <button id="close-assign-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
             </div>
             <form id="assign-case-form">
                 <input type="hidden" id="assign-doc-id">
@@ -482,7 +499,8 @@
                 <div>
                     <label for="assign-user" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Assign to:</label>
                     <select id="assign-user" name="assign-user" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        </select>
+                        <!-- User options for assignment will be populated here -->
+                    </select>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" id="cancel-assign-btn" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">
@@ -496,11 +514,12 @@
         </div>
     </div>
     
+    <!-- Add Note Modal -->
     <div id="add-note-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold dark:text-white">Add a Note</h2>
-                <button id="close-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+                 <button id="close-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
             </div>
             <form id="add-note-form">
                 <input type="hidden" id="note-doc-id">
@@ -520,11 +539,12 @@
         </div>
     </div>
 
+    <!-- Edit Note Modal -->
     <div id="edit-note-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold dark:text-white">Edit Note</h2>
-                <button id="close-edit-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+                 <button id="close-edit-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
             </div>
             <form id="edit-note-form">
                 <input type="hidden" id="edit-note-doc-id">
@@ -545,34 +565,37 @@
         </div>
     </div>
     
+    <!-- Edit Modal -->
     <div id="edit-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-lg w-full">
             <h2 class="text-xl font-semibold mb-4 dark:text-white">Edit Case</h2>
             <form id="edit-case-form" class="space-y-4">
-                <input type="hidden" id="edit-doc-id">
-                <input type="text" id="edit-caseNumber" placeholder="Case Number" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <input type="text" id="edit-partyName" placeholder="Party Name" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <input type="text" id="edit-volume" placeholder="Volume" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <select id="edit-division" required class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                 <input type="hidden" id="edit-doc-id">
+                 <input type="text" id="edit-caseNumber" placeholder="Case Number" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                 <input type="text" id="edit-partyName" placeholder="Party Name" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                 <input type="text" id="edit-volume" placeholder="Volume" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                 <select id="edit-division" required class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                     <option>High Court Division</option>
                     <option>Appellate Division</option>
-                </select>
-                <div class="mt-6 flex justify-end space-x-3">
+                 </select>
+                 <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" id="cancel-edit-btn" class="py-2 px-4 border rounded-md dark:bg-gray-600 dark:text-gray-200 dark:border-gray-500 dark:hover:bg-gray-500">Cancel</button>
                     <button type="submit" class="py-2 px-4 border rounded-md text-white bg-indigo-600">Save Changes</button>
-                </div>
+                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Task Notes Modal -->
     <div id="task-notes-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-lg w-full">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-lg w-full">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="task-notes-modal-title" class="text-xl font-semibold dark:text-white">Task Notes</h2>
-                <button id="close-task-notes-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+                 <button id="close-task-notes-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
             </div>
             <div id="task-notes-list" class="space-y-3 max-h-60 overflow-y-auto mb-4 border-b dark:border-gray-700 pb-4">
-                </div>
+                <!-- Task notes will be rendered here -->
+            </div>
             <form id="add-task-note-form">
                 <input type="hidden" id="task-note-task-id">
                 <div>
@@ -586,11 +609,12 @@
         </div>
     </div>
 
+    <!-- Edit Task Note Modal -->
     <div id="edit-task-note-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold dark:text-white">Edit Task Note</h2>
-                <button id="close-edit-task-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
+                 <button id="close-edit-task-note-modal-btn" class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white text-2xl font-bold">&times;</button>
             </div>
             <form id="edit-task-note-form">
                 <input type="hidden" id="edit-task-note-task-id">
@@ -607,6 +631,7 @@
         </div>
     </div>
 
+    <!-- Custom alert/message box -->
     <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg hidden transition-opacity duration-300">
         <p id="message-text"></p>
     </div>
@@ -745,7 +770,6 @@
         
         // User Filter Buttons
         const filterAddedBtn = document.getElementById('filter-added-by-me');
-        const filterUncheckedBtn = document.getElementById('filter-unchecked');
         const filterCheckedBtn = document.getElementById('filter-checked-by-me');
         const filterConfirmedBtn = document.getElementById('filter-confirmed-by-me');
         const filterCheckedByOthersBtn = document.getElementById('filter-checked-by-others');
@@ -812,14 +836,12 @@
         }
         
         async function createDefaultUsers() {
-            const defaultUsers = {
+             const defaultUsers = {
                 'admin': 'adminpass', 'Sheikh': 'pass123', 'Shourav': 'pass123', 'Fahim': 'pass123'
             };
-            const batch = writeBatch(db);
             for (const username in defaultUsers) {
-                batch.set(doc(usersCollectionRef, username), { password: defaultUsers[username] });
+                await setDoc(doc(usersCollectionRef, username), { password: defaultUsers[username] });
             }
-            await batch.commit();
         }
 
         function populateLoginDropdown() {
@@ -834,13 +856,13 @@
         
         async function authenticateUser() {
             return new Promise((resolve, reject) => {
-                onAuthStateChanged(auth, async (user) => {
+                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         console.log("Already signed in with UID:", user.uid);
                         userId = user.uid;
                         resolve(user);
                     } else {
-                        try {
+                         try {
                             if (initialAuthToken) {
                                 const userCredential = await signInWithCustomToken(auth, initialAuthToken);
                                 userId = userCredential.user.uid;
@@ -853,8 +875,8 @@
                                 resolve(userCredential.user);
                             }
                         } catch (error) {
-                            console.error("Authentication failed:", error);
-                            reject(error);
+                             console.error("Authentication failed:", error);
+                             reject(error);
                         }
                     }
                 });
@@ -904,8 +926,8 @@
             casesTableBody.innerHTML = '';
 
             if (cases.length === 0) {
-                casesTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No cases found.</td></tr>`;
-                return;
+                 casesTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">No cases found.</td></tr>`;
+                 return;
             }
             
             // Group cases by date for all users
@@ -974,7 +996,7 @@
                         workflowHtml += `<button data-id="${caseData.id}" class="mark-checked-btn text-xs font-semibold text-white bg-yellow-500 hover:bg-yellow-600 rounded-md px-3 py-1 shadow-sm">Mark as Checked</button>`;
                     }
                     if (caseData.addedBy === activeUser || isAdminView) {
-                       workflowHtml += `<button data-id="${caseData.id}" data-action="assign-check" class="assign-btn text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-md px-3 py-1 shadow-sm mt-1">Re-assign Check</button>`;
+                         workflowHtml += `<button data-id="${caseData.id}" data-action="assign-check" class="assign-btn text-xs font-semibold text-white bg-blue-500 hover:bg-blue-600 rounded-md px-3 py-1 shadow-sm mt-1">Re-assign Check</button>`;
                     }
                     break;
                 case 'Checked':
@@ -987,7 +1009,7 @@
                         workflowHtml += `<button data-id="${caseData.id}" class="mark-confirmed-btn text-xs font-semibold text-white bg-green-500 hover:bg-green-600 rounded-md px-3 py-1 shadow-sm">Mark as Confirmed</button>`;
                     }
                     if (caseData.checkedBy === activeUser || isAdminView) {
-                       workflowHtml += `<button data-id="${caseData.id}" data-action="assign-confirm" class="assign-btn text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-md px-3 py-1 shadow-sm mt-1">Re-assign Confirm</button>`;
+                         workflowHtml += `<button data-id="${caseData.id}" data-action="assign-confirm" class="assign-btn text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 rounded-md px-3 py-1 shadow-sm mt-1">Re-assign Confirm</button>`;
                     }
                     break;
             }
@@ -995,10 +1017,10 @@
             workflowHtml += `<button data-id="${caseData.id}" class="add-note-btn text-xs font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md px-3 py-1 shadow-sm mt-2 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">Add Note</button>`;
             
             if (caseData.addedBy === activeUser || isAdminView) {
-                workflowHtml += `<div class="flex space-x-2 pt-2">
-                                    <button data-id="${caseData.id}" class="edit-btn text-xs font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Edit</button>
-                                    <button data-id="${caseData.id}" class="delete-btn text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400">Delete</button>
-                                </div>`;
+                 workflowHtml += `<div class="flex space-x-2 pt-2">
+                                     <button data-id="${caseData.id}" class="edit-btn text-xs font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white">Edit</button>
+                                     <button data-id="${caseData.id}" class="delete-btn text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400">Delete</button>
+                                  </div>`;
             }
             workflowHtml += `</div>`;
 
@@ -1042,10 +1064,10 @@
             if (caseData.auditLog && caseData.auditLog.length > 0) {
                 caseData.auditLog.forEach(log => {
                     auditTrailHtml += `
-                        <div class="flex items-center mt-2 border-t pt-2 border-gray-200 dark:border-gray-700">
-                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <div><strong>${log.action}</strong><div class="text-gray-500 dark:text-gray-400">${new Date(log.timestamp).toLocaleString()}</div></div>
-                        </div>
+                       <div class="flex items-center mt-2 border-t pt-2 border-gray-200 dark:border-gray-700">
+                           <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                           <div><strong>${log.action}</strong><div class="text-gray-500 dark:text-gray-400">${new Date(log.timestamp).toLocaleString()}</div></div>
+                       </div>
                     `;
                 });
             }
@@ -1225,7 +1247,7 @@
         }
         
         async function handleMarkAsConfirmed(docId) {
-            const updateData = {
+             const updateData = {
                 status: 'Confirmed',
                 confirmedBy: currentLoggedInUser,
                 confirmedAt: new Date().toISOString(),
@@ -1370,11 +1392,6 @@
                 filteredCases = filteredCases.filter(c => c.volume && c.volume.toLowerCase().includes(volume));
             }
 
-            const division = document.getElementById('filter-division').value;
-            if (division) {
-                filteredCases = filteredCases.filter(c => c.division === division);
-            }
-
             const addedBy = document.getElementById('filter-user-name').value;
             if (addedBy) {
                 filteredCases = filteredCases.filter(c => c.addedBy === addedBy);
@@ -1506,46 +1523,37 @@
 
             // 2. Get active status filters
             const showAdded = filterAddedBtn.classList.contains('active');
-            const showUnchecked = filterUncheckedBtn.classList.contains('active');
             const showChecked = filterCheckedBtn.classList.contains('active');
             const showConfirmed = filterConfirmedBtn.classList.contains('active');
             const showCheckedByOthers = filterCheckedByOthersBtn.classList.contains('active');
             const showConfirmedByOthers = filterConfirmedByOthersBtn.classList.contains('active');
-            const noStatusFilter = !showAdded && !showUnchecked && !showChecked && !showConfirmed && !showCheckedByOthers && !showConfirmedByOthers;
+            const noStatusFilter = !showAdded && !showChecked && !showConfirmed && !showCheckedByOthers && !showConfirmedByOthers;
 
             // 3. Calculate Stats and Filter Cases for Display simultaneously
             let addedCount = 0;
-            let uncheckedCount = 0;
             let checkedCount = 0;
             let confirmedCount = 0;
             let checkedByOthersCount = 0;
             let confirmedByOthersCount = 0;
             
             const casesToDisplay = [];
-            const allCasesInDateRange = localCases.filter(c => {
-                if (!c.createdAt) return false;
-                const caseDate = new Date(c.createdAt);
-                return caseDate >= startDate && caseDate <= endDate;
-            });
-            const userCases = allCasesInDateRange.filter(c => c.involvedUsers.includes(username));
+            const userCases = localCases.filter(c => c.involvedUsers.includes(username));
 
             userCases.forEach(c => {
                 let displayThisCase = false;
                 
                 // My actions in range
-                const wasAddedInRange = c.addedBy === username;
-                const wasCheckedInRange = c.checkedBy === username;
-                const wasConfirmedInRange = c.confirmedBy === username;
-                const wasUncheckedInRange = c.status === 'Uploaded' || (c.status === 'Pending Check' && c.assignedForCheck === username);
+                const wasAddedInRange = c.addedBy === username && c.createdAt && new Date(c.createdAt) >= startDate && new Date(c.createdAt) <= endDate;
+                const wasCheckedInRange = c.checkedBy === username && c.checkedAt && new Date(c.checkedAt) >= startDate && new Date(c.checkedAt) <= endDate;
+                const wasConfirmedInRange = c.confirmedBy === username && c.confirmedAt && new Date(c.confirmedAt) >= startDate && new Date(c.confirmedAt) <= endDate;
 
                 // Actions by others on my cases in range
-                const wasCheckedByOthersInRange = c.addedBy === username && c.checkedBy && c.checkedBy !== username;
-                const wasConfirmedByOthersInRange = c.addedBy === username && c.confirmedBy && c.confirmedBy !== username;
+                const wasCheckedByOthersInRange = c.addedBy === username && c.checkedBy && c.checkedBy !== username && c.checkedAt && new Date(c.checkedAt) >= startDate && new Date(c.checkedAt) <= endDate;
+                const wasConfirmedByOthersInRange = c.addedBy === username && c.confirmedBy && c.confirmedBy !== username && c.confirmedAt && new Date(c.confirmedAt) >= startDate && new Date(c.confirmedAt) <= endDate;
 
                 if(wasAddedInRange) addedCount++;
                 if(wasCheckedInRange) checkedCount++;
                 if(wasConfirmedInRange) confirmedCount++;
-                if(c.status === 'Uploaded' || c.status === 'Pending Check') uncheckedCount++;
                 if(wasCheckedByOthersInRange) checkedByOthersCount++;
                 if(wasConfirmedByOthersInRange) confirmedByOthersCount++;
 
@@ -1553,7 +1561,6 @@
                     displayThisCase = true;
                 } else {
                     if (showAdded && wasAddedInRange) displayThisCase = true;
-                    if (showUnchecked && wasUncheckedInRange) displayThisCase = true;
                     if (showChecked && wasCheckedInRange) displayThisCase = true;
                     if (showConfirmed && wasConfirmedInRange) displayThisCase = true;
                     if (showCheckedByOthers && wasCheckedByOthersInRange) displayThisCase = true;
@@ -1567,7 +1574,6 @@
             
             // 4. Update UI
             userAddedCountSpan.textContent = addedCount;
-            document.getElementById('user-unchecked-count').textContent = uncheckedCount;
             userCheckedCountSpan.textContent = checkedCount;
             userConfirmedCountSpan.textContent = confirmedCount;
             userCheckedByOthersCountSpan.textContent = checkedByOthersCount;
@@ -1775,7 +1781,7 @@
                     }
                 }
                 if (noStatusFilter || showChecked) {
-                    if (wasCheckedInRange) {
+                     if (wasCheckedInRange) {
                         const checked = formatBdtDateTime(c.checkedAt);
                         const rowData = [c.caseNumber, c.partyName, c.volume, c.division, c.status, "Checked", checked.date, checked.time].map(sanitizeCsvField);
                         csvContent += rowData.join(",") + "\r\n";
@@ -2052,7 +2058,7 @@
         }
         
         async function handleDeleteTask(taskId) {
-            if (!taskId) return;
+             if (!taskId) return;
             try {
                 await deleteDoc(doc(tasksCollectionRef, taskId));
                 displayMessage("Task deleted successfully!", "success");
@@ -2110,7 +2116,7 @@
                         <p>to</p>
                         <p>${task.endDate}</p>
                     </div>
-                   <div class="col-span-1 text-center">
+                     <div class="col-span-1 text-center">
                         <button data-id="${task.id}" class="view-task-notes-btn text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold">Notes</button>
                     </div>
                     <div class="col-span-1 text-right">
@@ -2333,7 +2339,6 @@
 
         // User filter button listeners
         filterAddedBtn.addEventListener('click', () => filterAddedBtn.classList.toggle('active'));
-        filterUncheckedBtn.addEventListener('click', () => filterUncheckedBtn.classList.toggle('active'));
         filterCheckedBtn.addEventListener('click', () => filterCheckedBtn.classList.toggle('active'));
         filterConfirmedBtn.addEventListener('click', () => filterConfirmedBtn.classList.toggle('active'));
         filterCheckedByOthersBtn.addEventListener('click', () => filterCheckedByOthersBtn.classList.toggle('active'));
@@ -2361,7 +2366,7 @@
         });
         
         toggleUserManagementBtn.addEventListener('click', () => {
-            setActiveAdminView(toggleUserManagementBtn, userManagementSection);
+             setActiveAdminView(toggleUserManagementBtn, userManagementSection);
         });
 
         toggleTaskManagementBtn.addEventListener('click', () => {
@@ -2453,8 +2458,8 @@
   if (!table || !tbody) { console.warn('Table or tbody (cases-table-body) not found'); return; }
 
   // ---------- Config ----------
-  let perPage = 50;    // default
-  let siMode = 'global';   // 'global' (1..N) or 'page' (1..perPage)
+  let perPage = 50;          // default
+  let siMode = 'global';     // 'global' (1..N) or 'page' (1..perPage)
   const maxPageButtons = 7;  // max numbered buttons visible (with ellipses)
 
   // ---------- State ----------
